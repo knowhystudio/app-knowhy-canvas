@@ -1,5 +1,5 @@
 {
-  "name": "m3e-canvas",
+  "name": "knowhy-canvas",
   "version": "0.1.0",
   "private": true,
   "engines": {
@@ -32,7 +32,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lnkiai/m3e-canvas.git"
+    "url": "https://github.com/zzz123hash/knowhy-canvas.git"
   },
-  "homepage": "https://lnkiai.github.io/m3e-canvas/"
+  "homepage": "https://zzz123hash.github.io/knowhy-canvas/"
 }
