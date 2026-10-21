@@ -1,4 +1,4 @@
-import { CAROUSEL_LAYOUTS, DATE_LAYOUTS, Doc, KIND_ORDER, Kind, TIME_LAYOUTS, VARIANTS, isCardAlign, isCardImagePos, isPlace, isTextToken, isPlatform, isTrackThickness } from "./tokens";
+import { CAROUSEL_LAYOUTS, DATE_LAYOUTS, Doc, KIND_ORDER, Kind, TIME_LAYOUTS, VARIANTS, isCardAlign, isCardImagePos, isFramePreset, isPlace, isTextToken, isPlatform, isTrackThickness } from "./tokens";
 
 /* A project file is the Doc as JSON, nothing more. Reading one back only checks
  * the shape the editor relies on; the same migrations that run on a saved
@@ -65,6 +65,7 @@ const validFrame = (frame: unknown) =>
   Number.isFinite(frame.y) &&
   (frame.w === undefined || (Number.isFinite(frame.w) && (frame.w as number) > 0)) &&
   (frame.h === undefined || (Number.isFinite(frame.h) && (frame.h as number) > 0)) &&
+  (frame.kind === undefined || isFramePreset(frame.kind)) &&
   (frame.note === undefined || typeof frame.note === "string") &&
   (frame.place === undefined || isPlace(frame.place)) &&
   (frame.length === undefined || (Number.isFinite(frame.length) && (frame.length as number) > 0));

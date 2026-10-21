@@ -150,7 +150,11 @@ export function FrameSizePicker({
     <Segmented<FramePreset>
       options={[
         { key: "phone", icon: "smartphone", label: compact ? undefined : t("phoneFrame", lang), title: t("phoneFrame", lang) },
+        { key: "iphone", icon: "phone_iphone", label: compact ? undefined : t("iphoneFrame", lang), title: t("iphoneFrame", lang) },
+        { key: "tablet", icon: "tablet", label: compact ? undefined : t("tabletFrame", lang), title: t("tabletFrame", lang) },
+        { key: "web", icon: "web", label: compact ? undefined : t("webFrame", lang), title: t("webFrame", lang) },
         { key: "desktop", icon: "desktop_windows", label: compact ? undefined : t("desktopFrame", lang), title: t("desktopFrame", lang) },
+        { key: "win", icon: "window", label: compact ? undefined : t("winFrame", lang), title: t("winFrame", lang) },
       ]}
       value={framePresetOf(frame)}
       onChange={onChange}

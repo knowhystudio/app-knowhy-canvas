@@ -239,6 +239,7 @@ const NO_BOX: Kind[] = [
   "splitButton",
   "fabMenu",
   "carousel",
+  "iosSearch",
 ];
 
 /** Padding follows M3: icon+label is tighter than label alone. */
@@ -1678,6 +1679,198 @@ function Body({ item, p, tabScroll, menuShown }: { item: Item; p: Palette; tabSc
         />
       );
     }
+    /* ---------- iOS-style parts: drawn with the palette's roles, so they follow every
+       scheme and dark mode like everything else ---------- */
+    case "iosSegment": {
+      const tabs = item.tabs?.length ? item.tabs : [{ icon: "", label: "One" }, { icon: "", label: "Two" }];
+      const sel = Math.min(item.selected ?? 0, tabs.length - 1);
+      return (
+        <div style={{ display: "flex", alignItems: "stretch", width: "100%", height: "100%", padding: 2, boxSizing: "border-box" }}>
+          {tabs.map((tab, i) => (
+            <div
+              key={i}
+              style={{
+                flex: 1,
+                minWidth: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 4,
+                borderRadius: 7,
+                background: i === sel ? p.surface : "transparent",
+                color: i === sel ? p.onSurface : p.onSurfaceVariant,
+                fontSize: 13,
+                fontWeight: 600,
+                boxShadow: i === sel ? "0 1px 3px rgba(0,0,0,0.14)" : "none",
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {tab.icon && <Icon name={tab.icon} size={15} />}
+              {tab.label}
+            </div>
+          ))}
+        </div>
+      );
+    }
+    case "iosNavBar":
+      return (
+        <div style={{ position: "relative", display: "flex", flexDirection: "column", justifyContent: "flex-end", width: "100%", height: "100%", padding: "0 16px 6px", boxSizing: "border-box" }}>
+          <span style={{ fontSize: 34, fontWeight: 700, lineHeight: 1.15, letterSpacing: 0.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.label}</span>
+          {item.icon && (
+            <span style={{ position: "absolute", left: 6, top: 10, color: p.primary }}>
+              <Icon name={item.icon} size={26} />
+            </span>
+          )}
+          {item.icon2 && (
+            <span style={{ position: "absolute", right: 14, top: 11, color: p.primary }}>
+              <Icon name={item.icon2} size={22} />
+            </span>
+          )}
+        </div>
+      );
+    case "iosToolbar": {
+      const tabs = item.tabs?.length ? item.tabs : [{ icon: "square_and_pencil", label: "" }, { icon: "folder", label: "" }, { icon: "delete", label: "" }];
+      return (
+        <div style={{ display: "flex", alignItems: "center", width: "100%", height: "100%", padding: "0 8px", boxSizing: "border-box" }}>
+          {tabs.map((tab, i) => (
+            <span key={i} style={{ flex: 1, display: "grid", placeItems: "center", color: p.primary }}>
+              <Icon name={tab.icon || "circle"} size={22} />
+            </span>
+          ))}
+        </div>
+      );
+    }
+    case "iosList": {
+      const tabs = item.tabs?.length ? item.tabs : [{ icon: "gear", label: "General" }, { icon: "notifications", label: "Notifications", on: true }];
+      const rowH = 44;
+      return (
+        <div style={{ width: "100%", height: "100%", overflow: "hidden", boxSizing: "border-box" }}>
+          {tabs.map((tab, i) => (
+            <div
+              key={i}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                height: rowH,
+                padding: "0 14px",
+                borderTop: i === 0 ? "none" : `0.5px solid ${p.outlineVariant}`,
+                boxSizing: "border-box",
+                width: "100%",
+                color: p.onSurface,
+              }}
+            >
+              {tab.icon && <Icon name={tab.icon} size={19} />}
+              <span style={{ flex: 1, minWidth: 0, fontSize: 15, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{tab.label}</span>
+              {tab.on !== undefined ? (
+                <span style={{ width: 42, height: 26, borderRadius: 13, background: tab.on ? p.primary : p.surfaceContainerHighest, position: "relative", flex: "0 0 auto" }}>
+                  <span style={{ position: "absolute", top: 2, left: tab.on ? 18 : 2, width: 22, height: 22, borderRadius: 11, background: "#FFFFFF", boxShadow: "0 1px 3px rgba(0,0,0,0.25)" }} />
+                </span>
+              ) : (
+                <span style={{ color: p.outline }}>
+                  <Icon name="chevron_right" size={16} />
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    }
+    case "iosTabBar": {
+      const tabs = item.tabs?.length ? item.tabs : [{ icon: "house", label: "Home" }, { icon: "search", label: "Search" }, { icon: "person", label: "Profile" }];
+      const sel = Math.min(item.selected ?? 0, tabs.length - 1);
+      return (
+        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column" }}>
+          <div style={{ flex: 1, display: "flex" }}>
+            {tabs.map((tab, i) => (
+              <span key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, color: i === sel ? p.primary : p.onSurfaceVariant }}>
+                {tab.icon && <Icon name={tab.icon} size={22} />}
+                {tab.label ? <span style={{ fontSize: 10, fontWeight: 500, maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{tab.label}</span> : null}
+              </span>
+            ))}
+          </div>
+          <div style={{ display: "flex", justifyContent: "center", paddingBottom: 6 }}>
+            <span style={{ width: 120, height: 5, borderRadius: 3, background: p.onSurface, opacity: 0.85 }} />
+          </div>
+        </div>
+      );
+    }
+    case "iosSheet": {
+      const tabs = item.tabs?.length ? item.tabs : [{ icon: "photo_camera", label: "Camera" }, { icon: "photo_library", label: "Photos" }, { icon: "delete", label: "Remove" }];
+      return (
+        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", boxSizing: "border-box", padding: 8, gap: 8 }}>
+          <div style={{ display: "flex", justifyContent: "center", paddingTop: 2 }}>
+            <span style={{ width: 36, height: 5, borderRadius: 3, background: p.outlineVariant }} />
+          </div>
+          {item.label.trim() && (
+            <div style={{ textAlign: "center", fontSize: 13, fontWeight: 600, color: p.onSurfaceVariant, padding: "2px 0 4px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.label}</div>
+          )}
+          <div style={{ flex: 1, minHeight: 0, borderRadius: 12, background: p.surface, overflow: "hidden" }}>
+            {tabs.map((tab, i) => (
+              <div
+                key={i}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  height: 44,
+                  borderTop: i === 0 ? "none" : `0.5px solid ${p.outlineVariant}`,
+                  fontSize: 17,
+                  color: i === tabs.length - 1 ? p.error : p.primary,
+                  boxSizing: "border-box",
+                  width: "100%",
+                }}
+              >
+                {tab.icon && <Icon name={tab.icon} size={18} />}
+                {tab.label}
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+    case "iosAlert": {
+      const tabs = item.tabs?.length ? item.tabs : [{ icon: "", label: "OK" }, { icon: "", label: "Cancel" }];
+      return (
+        <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", textAlign: "center", boxSizing: "border-box" }}>
+          <div style={{ padding: "16px 14px 12px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <div style={{ fontSize: 16, fontWeight: 600, color: p.onSurface }}>{item.label}</div>
+            {item.supporting?.trim() && <div style={{ fontSize: 13, color: p.onSurfaceVariant, marginTop: 4, lineHeight: 1.4 }}>{item.supporting}</div>}
+          </div>
+          <div style={{ display: "flex", borderTop: `0.5px solid ${p.outlineVariant}` }}>
+            {tabs.map((tab, i) => (
+              <span
+                key={i}
+                style={{
+                  flex: 1,
+                  textAlign: "center",
+                  padding: "10px 0",
+                  fontSize: 16,
+                  color: p.primary,
+                  borderLeft: i === 0 ? "none" : `0.5px solid ${p.outlineVariant}`,
+                  fontWeight: i === 0 ? 600 : 400,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {tab.label}
+              </span>
+            ))}
+          </div>
+        </div>
+      );
+    }
+    case "iosSearch":
+      return (
+        <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", gap: 6, padding: "0 9px", boxSizing: "border-box", background: p.surfaceContainerHigh, borderRadius: 10, color: p.onSurfaceVariant }}>
+          <Icon name="search" size={16} />
+          <span style={{ fontSize: 15, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.label}</span>
+          <Icon name="mic" size={16} />
+        </div>
+      );
   }
   return null;
 }
@@ -1750,6 +1943,20 @@ export function boxStyle(item: Item, p: Palette): React.CSSProperties {
       const t = item.fill ?? "surfaceContainerLow";
       return { background: p[t], border: "none", color: onToken(t, p) };
     }
+    /* iOS parts: flat surfaces with hairlines, in the palette's roles */
+    case "iosSegment":
+      return { background: p.surfaceContainerHigh, color: p.onSurfaceVariant, border: "none" };
+    case "iosNavBar":
+    case "iosAlert":
+      return { background: p.surface, color: p.onSurface, border: "none" };
+    case "iosToolbar":
+      return { background: p.surfaceContainerLow, color: p.primary, borderTop: `0.5px solid ${p.outlineVariant}`, borderBottom: `0.5px solid ${p.outlineVariant}` };
+    case "iosTabBar":
+      return { background: p.surfaceContainerLow, color: p.onSurface, borderTop: `0.5px solid ${p.outlineVariant}` };
+    case "iosList":
+      return { background: p.surface, color: p.onSurface, border: `1px solid ${p.outlineVariant}` };
+    case "iosSheet":
+      return { background: p.surfaceContainerLow, color: p.onSurface, border: "none" };
     default:
       return { background: p.surfaceContainerHigh, border: "none", color: p.onSurface };
   }

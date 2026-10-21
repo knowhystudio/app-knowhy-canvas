@@ -19,6 +19,12 @@ import {
   PHONE_H,
   DESKTOP_W,
   DESKTOP_H,
+  IPHONE_W,
+  IPHONE_H,
+  TABLET_W,
+  TABLET_H,
+  WEB_W,
+  WEB_H,
   PHONE_R,
   DESKTOP_R,
   R_FULL,
@@ -180,8 +186,12 @@ describe("frame helpers", () => {
   });
 
   it("framePresetPatch returns the right w/h pair", () => {
-    expect(framePresetPatch("phone")).toEqual({ w: undefined, h: undefined });
-    expect(framePresetPatch("desktop")).toEqual({ w: DESKTOP_W, h: DESKTOP_H });
+    expect(framePresetPatch("phone")).toEqual({ kind: "phone", w: undefined, h: undefined });
+    expect(framePresetPatch("desktop")).toEqual({ kind: "desktop", w: DESKTOP_W, h: DESKTOP_H });
+    expect(framePresetPatch("iphone")).toEqual({ kind: "iphone", w: IPHONE_W, h: IPHONE_H });
+    expect(framePresetPatch("tablet")).toEqual({ kind: "tablet", w: TABLET_W, h: TABLET_H });
+    expect(framePresetPatch("web")).toEqual({ kind: "web", w: WEB_W, h: WEB_H });
+    expect(framePresetPatch("win")).toEqual({ kind: "win", w: DESKTOP_W, h: DESKTOP_H });
   });
 
   it("frameRect maps x/y to l/t and adds w/h to r/b", () => {
@@ -321,10 +331,11 @@ describe("normalizeTheme", () => {
 });
 
 describe("isPlatform / defaultPlatformOf", () => {
-  it("isPlatform narrows to 'android' | 'web'", () => {
+  it("isPlatform narrows to 'android' | 'web' | 'ios'", () => {
     expect(isPlatform("android")).toBe(true);
     expect(isPlatform("web")).toBe(true);
-    expect(isPlatform("ios")).toBe(false);
+    expect(isPlatform("ios")).toBe(true);
+    expect(isPlatform("windows")).toBe(false);
     expect(isPlatform(undefined)).toBe(false);
   });
 

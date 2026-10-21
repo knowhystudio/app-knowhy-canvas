@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Doc, Frame, Group, Palette, Theme, frameOfGroup, frameSizeOf, layoutOf } from "@/lib/tokens";
-import { TEMPLATES, TEMPLATE_CATEGORIES, TemplateCategory, TemplateDef, buildTemplate } from "@/lib/templates";
+import { TEMPLATES, TEMPLATE_CATEGORIES, TemplateCategory, TemplateDef, TemplateDevice, buildTemplate } from "@/lib/templates";
 import { t, useLang } from "@/lib/i18n";
 import { M3Node } from "./M3Node";
 
@@ -112,30 +112,42 @@ export function TemplatePanel({
 }) {
   const lang = useLang();
   const [cat, setCat] = useState<TemplateCategory>(TEMPLATE_CATEGORIES[0].key);
+  const [dev, setDev] = useState<TemplateDevice>("phone");
+  const switchDevice = (d: TemplateDevice) => {
+    setDev(d);
+    /* a device may not cover every category: land on the nearest one that does */
+    if (!TEMPLATES.some((t) => t.device === d && t.category === cat)) {
+      const first = TEMPLATE_CATEGORIES.find((c) => TEMPLATES.some((t) => t.device === d && t.category === c.key));
+      if (first) setCat(first.key);
+    }
+  };
   const keep = { paletteKey, customPalette: customPalette ?? undefined, dynamicColor, theme };
-  const shown = TEMPLATES.filter((tpl) => tpl.category === cat);
+  const shown = TEMPLATES.filter((tpl) => tpl.category === cat && tpl.device === dev);
+  const chip = (on: boolean) =>
+    ({
+      border: "none",
+      cursor: "pointer",
+      font: "inherit",
+      fontSize: 12.5,
+      fontWeight: 600,
+      padding: "6px 14px",
+      borderRadius: 999,
+      background: on ? p.primary : p.surfaceContainerHigh,
+      color: on ? p.onPrimary : p.onSurfaceVariant,
+    }) as React.CSSProperties;
   return (
     <div className="no-scrollbar" style={{ height: "100%", overflowY: "auto", padding: "12px 12px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
       <div style={{ fontSize: 12, lineHeight: 1.5, color: p.onSurfaceVariant, padding: "0 4px" }}>{t("tplHint", lang)}</div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+        {([["phone", "tplDevPhone"], ["iphone", "tplDevIos"], ["web", "tplDevWeb"], ["desktop", "tplDevDesktop"]] as const).map(([key, labelKey]) => (
+          <button key={key} onClick={() => switchDevice(key)} aria-pressed={dev === key} className="m3-press" style={chip(dev === key)}>
+            {t(labelKey, lang)}
+          </button>
+        ))}
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
         {TEMPLATE_CATEGORIES.map((c) => (
-          <button
-            key={c.key}
-            onClick={() => setCat(c.key)}
-            aria-pressed={cat === c.key}
-            className="m3-press"
-            style={{
-              border: "none",
-              cursor: "pointer",
-              font: "inherit",
-              fontSize: 12.5,
-              fontWeight: 600,
-              padding: "6px 14px",
-              borderRadius: 999,
-              background: cat === c.key ? p.primary : p.surfaceContainerHigh,
-              color: cat === c.key ? p.onPrimary : p.onSurfaceVariant,
-            }}
-          >
+          <button key={c.key} onClick={() => setCat(c.key)} aria-pressed={cat === c.key} className="m3-press" style={chip(cat === c.key)}>
             {t(c.labelKey, lang)}
           </button>
         ))}

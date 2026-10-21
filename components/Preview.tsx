@@ -51,6 +51,7 @@ import {
   frameSizeOf,
   groupsInFrame,
   isPhoneFrame,
+  framePresetOf,
   normalizeTheme,
   toggleIcon,
   uniformRadii,
@@ -1388,6 +1389,60 @@ export function Preview({
   };
   const label: React.CSSProperties = { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 };
 
+  /* device chrome the canvas preset draws over its screen: an iPhone's status bar and
+   * dynamic island, a web page's browser bar, a window's macOS or Windows title bar. It
+   * sits over the content (pointer-events off), the way the real device would. */
+  const chromePreset = current ? framePresetOf(current) : "phone";
+  const chrome =
+    chromePreset === "phone" || chromePreset === "tablet" ? null : (
+      <div style={{ position: "absolute", inset: 0, zIndex: 40, pointerEvents: "none" }}>
+        {chromePreset === "iphone" && (
+          <>
+            <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: 50, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 30px", boxSizing: "border-box", color: p.onSurface, fontSize: 15, fontWeight: 600 }}>
+              <span>9:41</span>
+              <span style={{ display: "inline-flex", gap: 5, alignItems: "center" }}>
+                <Icon name="signal_cellular_alt" size={15} />
+                <Icon name="wifi" size={15} />
+                <Icon name="battery_full" size={16} />
+              </span>
+            </div>
+            <div style={{ position: "absolute", left: "50%", top: 11, transform: "translateX(-50%)", width: 122, height: 35, borderRadius: 18, background: "#000000" }} />
+          </>
+        )}
+        {chromePreset === "web" && (
+          <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: 56, background: p.surfaceContainerLow, borderBottom: `1px solid ${p.outlineVariant}`, display: "flex", alignItems: "center", gap: 12, padding: "0 16px", boxSizing: "border-box", color: p.onSurfaceVariant }}>
+            <span style={{ display: "inline-flex", gap: 6 }}>
+              {["#EC6A5E", "#F4BF4F", "#61C554"].map((c) => (
+                <span key={c} style={{ width: 11, height: 11, borderRadius: 6, background: c }} />
+              ))}
+            </span>
+            <span style={{ flex: 1, maxWidth: 560, height: 30, borderRadius: 15, background: p.surfaceContainerHigh, display: "flex", alignItems: "center", gap: 6, padding: "0 12px", fontSize: 13 }}>
+              <Icon name="lock" size={13} />
+              {current?.name || "example.com"}
+            </span>
+          </div>
+        )}
+        {(chromePreset === "desktop" || chromePreset === "win") && (
+          <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: 44, background: p.surfaceContainerLow, borderBottom: `1px solid ${p.outlineVariant}`, display: "flex", alignItems: "center", padding: "0 14px", boxSizing: "border-box", color: p.onSurfaceVariant, fontSize: 13 }}>
+            {chromePreset === "desktop" ? (
+              <span style={{ display: "inline-flex", gap: 8, alignItems: "center" }}>
+                {["#FF5F57", "#FEBC2E", "#28C840"].map((c) => (
+                  <span key={c} style={{ width: 12, height: 12, borderRadius: 6, background: c }} />
+                ))}
+              </span>
+            ) : (
+              <span style={{ display: "inline-flex", gap: 14, marginLeft: "auto", alignItems: "center", fontSize: 12 }}>
+                <Icon name="remove" size={16} />
+                <Icon name="crop_square" size={13} />
+                <Icon name="close" size={16} />
+              </span>
+            )}
+            <span style={chromePreset === "desktop" ? { position: "absolute", left: "50%", transform: "translateX(-50%)", fontWeight: 600 } : { marginLeft: 12, fontWeight: 600, color: p.onSurface }}>{current?.name || ""}</span>
+          </div>
+        )}
+      </div>
+    );
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -1472,6 +1527,7 @@ export function Preview({
                   <Screen frame={current} groups={groups} {...screenProps} />
                 </motion.div>
               </AnimatePresence>
+              {chrome}
             </motion.div>
             {peek && peekFrame && (
               <motion.div

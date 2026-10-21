@@ -138,6 +138,13 @@ export const PHONE_R = 40;
 export const DESKTOP_W = 1280;
 export const DESKTOP_H = 800;
 export const DESKTOP_R = 28;
+/* iPhone-class canvas (points), a tablet, and a web page viewport */
+export const IPHONE_W = 393;
+export const IPHONE_H = 852;
+export const TABLET_W = 834;
+export const TABLET_H = 1112;
+export const WEB_W = 1440;
+export const WEB_H = 900;
 /** M3 window size classes: a screen this wide is "expanded", where the navigation bar becomes a rail */
 export const EXPANDED_W = 840;
 export const isExpanded = (w: number) => w >= EXPANDED_W;
@@ -614,7 +621,17 @@ export type Kind =
   | "radio"
   | "carousel"
   | "datePicker"
-  | "timePicker";
+  | "timePicker"
+  /* iOS-style parts: drawn with the palette's roles, so they follow every scheme and
+     dark mode like the rest; the prompt describes them in HIG terms when the target is iOS */
+  | "iosSegment"
+  | "iosNavBar"
+  | "iosToolbar"
+  | "iosList"
+  | "iosTabBar"
+  | "iosSheet"
+  | "iosAlert"
+  | "iosSearch";
 
 /** how a carousel arranges its items: M3's four layouts */
 export type CarouselLayout = "multiBrowse" | "uncontained" | "hero" | "fullScreen";
@@ -1577,6 +1594,139 @@ export const KIND_SPEC: Record<Kind, KindSpec> = {
     defLabel: "選択肢",
     defIcon: null,
   },
+  /* ---------- iOS-style parts ---------- */
+  iosSegment: {
+    label: "iOS Segmented",
+    noun: "セグメントコントロール",
+    category: "navigation",
+    paletteIcon: "view_week",
+    w: CONTENT_W,
+    h: 32,
+    radius: 9,
+    hasVariant: false,
+    hasLabel: false,
+    hasSupporting: false,
+    hasIcon: false,
+    hasTabs: true,
+    defLabel: "",
+    defIcon: null,
+  },
+  iosNavBar: {
+    label: "iOS Nav Bar",
+    noun: "大きなタイトルのナビゲーションバー",
+    category: "navigation",
+    paletteIcon: "custom_toolbar",
+    w: PHONE_W,
+    h: 96,
+    radius: 0,
+    hasVariant: false,
+    hasLabel: true,
+    hasSupporting: false,
+    hasIcon: true,
+    defLabel: "Title",
+    defIcon: "chevron_left",
+    defIcon2: "ellipsis",
+  },
+  iosToolbar: {
+    label: "iOS Toolbar",
+    noun: "ツールバー",
+    category: "navigation",
+    paletteIcon: "toolbar",
+    w: PHONE_W,
+    h: 44,
+    radius: 0,
+    hasVariant: false,
+    hasLabel: false,
+    hasSupporting: false,
+    hasIcon: false,
+    hasTabs: true,
+    defLabel: "",
+    defIcon: null,
+  },
+  iosList: {
+    label: "iOS Grouped List",
+    noun: "グループ化されたリスト",
+    category: "containment",
+    paletteIcon: "format_list_bulleted",
+    w: CONTENT_W,
+    h: 220,
+    radius: 10,
+    hasVariant: false,
+    hasLabel: false,
+    hasSupporting: false,
+    hasIcon: false,
+    hasTabs: true,
+    size2: { min: 88, max: PHONE_H, step: 4, icon: "height", presets: [132, 220, 356] },
+    defLabel: "",
+    defIcon: null,
+    defSize: CONTENT_W,
+  },
+  iosTabBar: {
+    label: "iOS Tab Bar",
+    noun: "タブバー",
+    category: "navigation",
+    paletteIcon: "bottom_navigation",
+    w: PHONE_W,
+    h: 84,
+    radius: 0,
+    hasVariant: false,
+    hasLabel: false,
+    hasSupporting: false,
+    hasIcon: false,
+    hasTabs: true,
+    defLabel: "",
+    defIcon: null,
+  },
+  iosSheet: {
+    label: "iOS Action Sheet",
+    noun: "アクションシート",
+    category: "containment",
+    paletteIcon: "bottom_sheets",
+    w: PHONE_W,
+    h: 260,
+    radius: 14,
+    hasVariant: false,
+    hasLabel: true,
+    hasSupporting: false,
+    hasIcon: false,
+    hasTabs: true,
+    size2: { min: 120, max: PHONE_H, step: 4, icon: "height", presets: [180, 260, 340] },
+    defLabel: "",
+    defIcon: null,
+    defSize: PHONE_W,
+  },
+  iosAlert: {
+    label: "iOS Alert",
+    noun: "アラート",
+    category: "actions",
+    paletteIcon: "web_asset",
+    w: 270,
+    h: 140,
+    radius: 14,
+    hasVariant: false,
+    hasLabel: true,
+    hasSupporting: true,
+    hasIcon: false,
+    hasTabs: true,
+    defLabel: "Alert",
+    defIcon: null,
+    defSupporting: "Message",
+  },
+  iosSearch: {
+    label: "iOS Search",
+    noun: "検索フィールド",
+    category: "navigation",
+    paletteIcon: "search",
+    w: CONTENT_W,
+    h: 36,
+    radius: 10,
+    hasVariant: false,
+    hasLabel: true,
+    hasSupporting: false,
+    hasIcon: false,
+    defLabel: "Search",
+    defIcon: null,
+  },
 };
 
 export const KIND_ORDER: Kind[] = [
@@ -1616,12 +1766,20 @@ export const KIND_ORDER: Kind[] = [
   "loadingIndicator",
   "linearProgress",
   "circularProgress",
+  "iosSegment",
+  "iosNavBar",
+  "iosToolbar",
+  "iosList",
+  "iosTabBar",
+  "iosSheet",
+  "iosAlert",
+  "iosSearch",
 ];
 
 /* ---------- screen data ---------- */
 /** an entry in a bar, a menu or a carousel: what it shows, and -- on a carousel card -- the
  *  picture put on it */
-export type NavTab = { icon: string; label: string; src?: string };
+export type NavTab = { icon: string; label: string; src?: string; /** iOS list rows: a trailing switch when set, with `on` as its state */ on?: boolean };
 
 export type Item = {
   id: string;
@@ -1962,7 +2120,7 @@ export function actionsOf(it: Item): { slot: string; action: Action }[] {
 export const RIPPLE_KINDS: Kind[] = ["button", "iconButton", "chip", "fab", "extendedFab", "splitButton"];
 
 /** kinds a user can tap in the preview */
-export const TAPPABLE: Kind[] = ["button", "iconButton", "fab", "extendedFab", "chip", "listItem", "card", "image", "text", "splitButton", "radio", "datePicker", "timePicker"];
+export const TAPPABLE: Kind[] = ["button", "iconButton", "fab", "extendedFab", "chip", "listItem", "card", "image", "text", "splitButton", "radio", "datePicker", "timePicker", "iosSegment", "iosList", "iosTabBar", "iosSheet", "iosAlert"];
 
 /** palette roles a user may pick as a background */
 export type ColorToken =
@@ -2122,6 +2280,9 @@ export type Frame = {
   /** dimensions are optional so documents saved before desktop frames remain phone-sized */
   w?: number;
   h?: number;
+  /** which canvas preset the author picked; when absent it is read back from w and h,
+   *  so documents saved before the extra presets keep their meaning */
+  kind?: FramePreset;
   bg?: ColorToken;
   /** what this screen is for, in the author's words; goes into the prompt */
   note?: string;
@@ -2145,15 +2306,44 @@ export const PLACES: { key: Place; icon: string }[] = [
 ];
 export const isPlace = (v: unknown): v is Place => v === "top" || v === "center" || v === "bottom" || v === "spread";
 
-export type FramePreset = "phone" | "desktop";
+/** the canvas presets: an Android-class phone, an iPhone, a tablet, a web page and
+ *  desktop windows in the macOS and Windows idioms. "desktop" keeps its meaning as
+ *  the macOS-style window, also for documents saved before the split. */
+export type FramePreset = "phone" | "iphone" | "tablet" | "web" | "desktop" | "win";
+export const FRAME_PRESETS: FramePreset[] = ["phone", "iphone", "tablet", "web", "desktop", "win"];
+export const isFramePreset = (v: unknown): v is FramePreset => (FRAME_PRESETS as string[]).includes(v as FramePreset);
 export const frameSizeOf = (f: Frame) => ({ w: f.w ?? PHONE_W, h: f.h ?? PHONE_H });
-export const isPhoneFrame = (f: Frame) => {
-  const { w, h } = frameSizeOf(f);
-  return w === PHONE_W && h === PHONE_H;
+const dimsAre = (f: Frame, w: number, h: number) => {
+  const s = frameSizeOf(f);
+  return s.w === w && s.h === h;
 };
-export const framePresetOf = (f: Frame): FramePreset => (isPhoneFrame(f) ? "phone" : "desktop");
-export const framePresetPatch = (preset: FramePreset): Pick<Frame, "w" | "h"> =>
-  preset === "desktop" ? { w: DESKTOP_W, h: DESKTOP_H } : { w: undefined, h: undefined };
+export const isPhoneFrame = (f: Frame) => {
+  if (f.kind) return f.kind === "phone";
+  /* a document without the tag: phone frames are the ones saved without explicit size */
+  return f.w === undefined || dimsAre(f, PHONE_W, PHONE_H);
+};
+export const framePresetOf = (f: Frame): FramePreset => {
+  if (f.kind && isFramePreset(f.kind)) return f.kind;
+  if (f.w === undefined) return "phone";
+  if (dimsAre(f, IPHONE_W, IPHONE_H)) return "iphone";
+  if (dimsAre(f, TABLET_W, TABLET_H)) return "tablet";
+  if (f.w === WEB_W) return "web";
+  if (dimsAre(f, DESKTOP_W, DESKTOP_H)) return "desktop";
+  return f.w >= EXPANDED_W ? "desktop" : "phone";
+};
+export const framePresetPatch = (preset: FramePreset): Pick<Frame, "w" | "h" | "kind"> => {
+  const dims =
+    preset === "desktop" || preset === "win"
+      ? { w: DESKTOP_W, h: DESKTOP_H }
+      : preset === "iphone"
+        ? { w: IPHONE_W, h: IPHONE_H }
+        : preset === "tablet"
+          ? { w: TABLET_W, h: TABLET_H }
+          : preset === "web"
+            ? { w: WEB_W, h: WEB_H }
+            : { w: undefined, h: undefined };
+  return { kind: preset, ...dims };
+};
 /** the device a screen is drawn for is `frameSizeOf`; the screen itself may run further down,
  *  and everything laid out on it -- what it holds, where Tidy puts its bars -- goes by this */
 export const frameLengthOf = (f: Frame) => Math.max(f.length ?? 0, frameSizeOf(f).h);
@@ -2163,11 +2353,24 @@ export const frameRect = (f: Frame) => {
   return { l: f.x, t: f.y, r: f.x + w, b: f.y + frameLengthOf(f) };
 };
 /** the corner radius of a screen: a phone's rounded glass, a flatter window for the desktop */
-export const frameRadius = (f: Frame) => (isPhoneFrame(f) ? PHONE_R : DESKTOP_R);
+export const frameRadius = (f: Frame) => {
+  switch (framePresetOf(f)) {
+    case "phone":
+      return PHONE_R;
+    case "iphone":
+      return 46;
+    case "tablet":
+      return 18;
+    case "web":
+      return 12;
+    default:
+      return DESKTOP_R;
+  }
+};
 
 /** parts that span the screen edge to edge and follow its width when it changes */
 /** parts that span the screen they are on: the bars, and a carousel, whose row is the screen */
-export const FULL_WIDTH: Kind[] = ["topAppBar", "bottomNav", "tabs", "carousel"];
+export const FULL_WIDTH: Kind[] = ["topAppBar", "bottomNav", "tabs", "carousel", "iosNavBar", "iosToolbar", "iosTabBar"];
 
 /** a part no taller than the screen it is placed on: a box or a rail sized to a phone shrinks to a shorter screen */
 export function fitHeight(it: Item, screenH: number): Item {
@@ -2336,12 +2539,19 @@ export type Group = {
 export type FrameMode = "blank" | "phone";
 
 /** where the generated prompt asks for the app to be built */
-export type Platform = "android" | "web";
+export type Platform = "android" | "web" | "ios";
 export const DEFAULT_PLATFORM: Platform = "android";
-export const isPlatform = (v: unknown): v is Platform => v === "android" || v === "web";
-/** The target the prompt assumes when the author has not picked one: the web as
- *  soon as a desktop screen exists, Android otherwise. */
-export const defaultPlatformOf = (frames: Frame[], mode: FrameMode): Platform => (mode === "phone" && frames.some((f) => !isPhoneFrame(f)) ? "web" : DEFAULT_PLATFORM);
+export const isPlatform = (v: unknown): v is Platform => v === "android" || v === "web" || v === "ios";
+/** The target the prompt assumes when the author has not picked one: iOS with an
+ *  iPhone screen on the board, the web as soon as a desktop/tablet/web screen
+ *  exists, Android otherwise. */
+export const defaultPlatformOf = (frames: Frame[], mode: FrameMode): Platform => {
+  if (mode === "phone") {
+    if (frames.some((f) => framePresetOf(f) === "iphone")) return "ios";
+    if (frames.some((f) => !isPhoneFrame(f))) return "web";
+  }
+  return DEFAULT_PLATFORM;
+};
 
 export type Doc = {
   groups: Group[];
