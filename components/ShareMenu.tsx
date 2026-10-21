@@ -240,6 +240,7 @@ export function ShareDialog({
                 {t("closeBtn", lang)}
               </button>
             </div>
+            <div style={{ textAlign: "right", fontSize: 11, color: p.onSurfaceVariant }}>{t("basedOn", lang)}</div>
           </motion.div>
         </motion.div>
       )}

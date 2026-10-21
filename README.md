@@ -6,7 +6,11 @@
 </p>
 
 <p align="center">
-  <strong>Sketch Material 3 Expressive screens in the browser, link them, tap through them, and copy a prompt for your AI coding tool.</strong>
+  <strong>Knowhy Canvas — sketch Material 3 Expressive screens in the browser, start from a template, tap through the flow, and copy a prompt for your AI coding tool.</strong>
+</p>
+
+<p align="center">
+  Knowhy Canvas is KNOWHY's own UI sketching tool, based on the open-source <a href="https://github.com/lnkiai/m3e-canvas">M3E Canvas</a> (MIT). 上游 LICENSE 与 NOTICE 原样保留。
 </p>
 
 <p align="center">

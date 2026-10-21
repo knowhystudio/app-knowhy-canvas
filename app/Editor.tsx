@@ -132,6 +132,8 @@ import { LoadingIndicator } from "@/components/Loading";
 import { draftDesign } from "@/lib/ai";
 import { ShareDialog } from "@/components/ShareMenu";
 import { ColorPanel } from "@/components/ColorPanel";
+import { TemplatePanel } from "@/components/TemplatePanel";
+import { StylePanel } from "@/components/StylePanel";
 import { MotionPanel, ShapePanel, TypePanel } from "@/components/ThemePanel";
 import { ThemeContext, ensureFontLoaded, ensureLangFontLoaded } from "@/lib/theme";
 import { BottomSheet, MobileActionBar, MobileInspector, MobileLang, MobileSettings } from "@/components/Mobile";
@@ -439,15 +441,17 @@ function ThinkingRing({ p, frame }: { p: Palette; frame: Frame }) {
   );
 }
 
-type LeftTab = "parts" | "layers" | "color" | "shape" | "type" | "motion" | "ai";
-/** the left rail: parts and layers, then the four theme axes of the whole design */
-const LEFT_TABS: { key: LeftTab; icon: string; title: "parts" | "layers" | "colors" | "shape" | "typography" | "motion" | "ai" }[] = [
+type LeftTab = "parts" | "layers" | "templates" | "color" | "shape" | "type" | "motion" | "style" | "ai";
+/** the left rail: parts and layers, starter templates, then the four theme axes of the whole design */
+const LEFT_TABS: { key: LeftTab; icon: string; title: "parts" | "layers" | "tabTemplates" | "colors" | "shape" | "typography" | "motion" | "tabStyles" | "ai" }[] = [
   { key: "parts", icon: "add_box", title: "parts" },
   { key: "layers", icon: "layers", title: "layers" },
+  { key: "templates", icon: "dashboard_customize", title: "tabTemplates" },
   { key: "color", icon: "palette", title: "colors" },
   { key: "shape", icon: "rounded_corner", title: "shape" },
   { key: "type", icon: "text_fields", title: "typography" },
   { key: "motion", icon: "animation", title: "motion" },
+  { key: "style", icon: "auto_fix_high", title: "tabStyles" },
   { key: "ai", icon: "auto_awesome", title: "ai" },
 ];
 
@@ -4063,7 +4067,7 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
               )}
               <div style={{ height: 6 }} />
               {LEFT_TABS.map((tab, i) => (
-                <div key={tab.key} style={{ marginTop: i === 2 || i === 6 ? 10 : 0 }}>
+                <div key={tab.key} style={{ marginTop: i === 2 || i === 8 ? 10 : 0 }}>
                   <IconBtn
                     icon={tab.icon}
                     p={p}
@@ -4121,6 +4125,15 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
                     onPartPointerDown={onPartPointerDown}
                     onPartActivate={addPart}
                   />
+                ) : leftTab === "templates" ? (
+                  <TemplatePanel
+                    p={p}
+                    paletteKey={paletteKey}
+                    customPalette={customPalette}
+                    dynamicColor={dynamicColor}
+                    theme={theme}
+                    onLoad={arrive}
+                  />
                 ) : leftTab === "color" ? (
                   <ColorPanel
                     p={p}
@@ -4139,6 +4152,18 @@ export default function Editor({ initialLang, onReady }: { initialLang: Lang; on
                   <TypePanel p={p} theme={theme} onChange={patchTheme} />
                 ) : leftTab === "motion" ? (
                   <MotionPanel p={p} theme={theme} onChange={patchTheme} />
+                ) : leftTab === "style" ? (
+                  <StylePanel
+                    p={p}
+                    theme={theme}
+                    paletteKey={paletteKey}
+                    onApply={({ paletteKey: key, customPalette: custom, theme: patch }) => {
+                      setCustomPalette(custom);
+                      setPaletteKey(key);
+                      setDynamicColor(false);
+                      patchTheme(patch);
+                    }}
+                  />
                 ) : leftTab === "ai" ? (
                   <AiPanel p={p} settings={aiSettings} onSettings={updateAiSettings} />
                 ) : (
