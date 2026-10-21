@@ -156,8 +156,8 @@ function rowsOf(units: Unit[]): Unit[][] {
 }
 
 const isRail = (u: { kind: Kind }) => u.kind === "navRail";
-const isTop = (u: { kind: Kind }) => u.kind === "topAppBar" || u.kind === "tabs";
-const isBottomBar = (u: { kind: Kind }) => u.kind === "bottomNav" || u.kind === "bottomSheet";
+const isTop = (u: { kind: Kind }) => u.kind === "topAppBar" || u.kind === "tabs" || u.kind === "iosNavBar";
+const isBottomBar = (u: { kind: Kind }) => u.kind === "bottomNav" || u.kind === "bottomSheet" || u.kind === "iosTabBar" || u.kind === "iosToolbar";
 /** the group holds one of the bars Tidy pins to a screen's edge; lining parts up leaves it there */
 export const holdsEdgeBar = (g: Group) => g.items.some((it) => isTop(it) || isBottomBar(it) || isRail(it));
 const isFloatingBottom = (u: { kind: Kind }) => u.kind === "toolbar" || u.kind === "snackbar";

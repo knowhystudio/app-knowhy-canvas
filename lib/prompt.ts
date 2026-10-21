@@ -36,6 +36,7 @@ import {
   explodeGroup,
   frameOfGroup,
   frameLengthOf,
+  framePresetOf,
   frameRect,
   frameSizeOf,
   cardImagePosOf,
@@ -298,6 +299,33 @@ function itemJa(it: Item): string {
   const v = VARIANT_TEXT.ja[it.variant];
   const noun = KIND_TEXT.ja[it.kind]?.noun ?? it.kind;
   switch (it.kind) {
+    /* ---------- iOS-style parts ---------- */
+    case "iosSegment": {
+      const tabs = (it.tabs ?? []).map((t) => q(t.label || "ラベルなし"));
+      return `${tabs.length} 段の iOS セグメントコントロール（${tabs.join("、")}。${Math.min(it.selected ?? 0, tabs.length - 1) + 1} 段目を選択中）`;
+    }
+    case "iosNavBar":
+      return `大きなタイトル「${it.label}」の iOS ナビゲーションバー${it.icon ? `。左に ${it.icon}（戻る）` : ""}${it.icon2 ? `、右に ${it.icon2}` : ""}`;
+    case "iosToolbar": {
+      const icons = (it.tabs ?? []).map((t) => t.icon || "-").join("、");
+      return `${(it.tabs ?? []).length} 項目の iOS ツールバー（アイコン: ${icons}。すりガラス風の下部バー）`;
+    }
+    case "iosList": {
+      const tabs = (it.tabs ?? []).map((t) => `${q(t.label)}${t.on !== undefined ? `（スイッチ ${t.on ? "オン" : "オフ"}）` : ""}`);
+      return `${tabs.length} 行の iOS グループ化リスト（角丸のカードに ${tabs.join("、")} の行。行の右端はシェブロンまたはスイッチ）`;
+    }
+    case "iosTabBar": {
+      const tabs = (it.tabs ?? []).map((t) => `${q(t.label || "ラベルなし")}(${t.icon || "アイコンなし"})`);
+      return `${tabs.length} 項目の iOS タブバー（${tabs.join("、")}。${Math.min(it.selected ?? 0, tabs.length - 1) + 1} 番目を選択中。下部にホームインジケーター）`;
+    }
+    case "iosSheet": {
+      const tabs = (it.tabs ?? []).map((t) => q(t.label));
+      return `iOS アクションシート${hasText(it.label) ? `（タイトル: ${q(it.label)}）` : ""}。項目は上から ${tabs.join("、")}（最後の項目は破壊的操作で赤表示）`;
+    }
+    case "iosAlert":
+      return `iOS アラート（タイトル${q(it.label)}${it.supporting ? `、メッセージ${q(it.supporting)}` : ""}。ボタン: ${(it.tabs ?? []).map((t) => q(t.label)).join(" / ")}）`;
+    case "iosSearch":
+      return `iOS の検索フィールド（プレースホルダー${q(it.label)}、虫めがねと音声入力のアイコン付き）`;
     case "button":
       return `${hasText(it.label) ? q(it.label) : "ラベルなし"}の${v}ボタン${it.icon ? `（${it.icon} アイコン付き）` : ""}${buttonSize(it, "ja")}`;
     case "carousel":
@@ -395,6 +423,33 @@ function itemEn(it: Item): string {
   const v = VARIANT_TEXT.en[it.variant];
   const noun = KIND_TEXT.en[it.kind]?.noun ?? it.kind;
   switch (it.kind) {
+    /* ---------- iOS-style parts ---------- */
+    case "iosSegment": {
+      const tabs = (it.tabs ?? []).map((t) => q(t.label || "unlabeled"));
+      return `an iOS segmented control with ${tabs.length} segments (${tabs.join(", ")}; segment ${Math.min(it.selected ?? 0, tabs.length - 1) + 1} selected)`;
+    }
+    case "iosNavBar":
+      return `an iOS navigation bar with the large title ${q(it.label)}${it.icon ? `, a ${it.icon} (back) button on the left` : ""}${it.icon2 ? ` and a ${it.icon2} action on the right` : ""}`;
+    case "iosToolbar": {
+      const icons = (it.tabs ?? []).map((t) => t.icon || "-").join(", ");
+      return `an iOS toolbar (a frosted bottom bar) with ${(it.tabs ?? []).length} icon actions: ${icons}`;
+    }
+    case "iosList": {
+      const tabs = (it.tabs ?? []).map((t) => `${q(t.label)}${t.on !== undefined ? ` (switch ${t.on ? "on" : "off"})` : ""}`);
+      return `an iOS inset grouped list with ${tabs.length} rows: ${tabs.join(", ")}; each row ends in a chevron or a switch`;
+    }
+    case "iosTabBar": {
+      const tabs = (it.tabs ?? []).map((t) => `${q(t.label || "unlabeled")}(${t.icon || "no icon"})`);
+      return `an iOS tab bar with ${tabs.length} items (${tabs.join(", ")}; item ${Math.min(it.selected ?? 0, tabs.length - 1) + 1} selected, home indicator at the bottom)`;
+    }
+    case "iosSheet": {
+      const tabs = (it.tabs ?? []).map((t) => q(t.label));
+      return `an iOS action sheet${hasText(it.label) ? ` titled ${q(it.label)}` : ""}; options top to bottom: ${tabs.join(", ")} (the last one is destructive and shown in red)`;
+    }
+    case "iosAlert":
+      return `an iOS alert (title ${q(it.label)}${it.supporting ? `, message ${q(it.supporting)}` : ""}; buttons: ${(it.tabs ?? []).map((t) => q(t.label)).join(" / ")})`;
+    case "iosSearch":
+      return `an iOS search field with the placeholder ${q(it.label)} and magnifying-glass and voice icons`;
     case "button":
       return `a ${v} button ${hasText(it.label) ? q(it.label) : "with no label"}${it.icon ? ` with a ${it.icon} icon` : ""}${buttonSize(it, "en")}`;
     case "carousel":
@@ -492,6 +547,33 @@ function itemZh(it: Item): string {
   const v = VARIANT_TEXT.zh[it.variant];
   const noun = KIND_TEXT.zh[it.kind]?.noun ?? it.kind;
   switch (it.kind) {
+    /* ---------- iOS 风格组件 ---------- */
+    case "iosSegment": {
+      const tabs = (it.tabs ?? []).map((t) => q(t.label || "未命名"));
+      return `iOS 分段控件，共 ${tabs.length} 段（${tabs.join("、")}；当前选中第 ${Math.min(it.selected ?? 0, tabs.length - 1) + 1} 段）`;
+    }
+    case "iosNavBar":
+      return `iOS 大标题导航栏，标题「${it.label}」${it.icon ? `，左侧 ${it.icon}（返回）` : ""}${it.icon2 ? `，右侧 ${it.icon2}` : ""}`;
+    case "iosToolbar": {
+      const icons = (it.tabs ?? []).map((t) => t.icon || "-").join("、");
+      return `iOS 工具栏（底部毛玻璃栏），${(it.tabs ?? []).length} 个图标操作：${icons}`;
+    }
+    case "iosList": {
+      const tabs = (it.tabs ?? []).map((t) => `${q(t.label)}${t.on !== undefined ? `（开关：${t.on ? "开" : "关"}）` : ""}`);
+      return `iOS 分组圆角列表，共 ${tabs.length} 行：${tabs.join("、")}；行尾为箭头或开关`;
+    }
+    case "iosTabBar": {
+      const tabs = (it.tabs ?? []).map((t) => `${q(t.label || "未命名")}(${t.icon || "无图标"})`);
+      return `iOS 底部标签栏，共 ${tabs.length} 项（${tabs.join("、")}；当前选中第 ${Math.min(it.selected ?? 0, tabs.length - 1) + 1} 项，底部有 Home 指示条）`;
+    }
+    case "iosSheet": {
+      const tabs = (it.tabs ?? []).map((t) => q(t.label));
+      return `iOS 操作菜单（Action Sheet）${hasText(it.label) ? `，标题「${it.label}」` : ""}；选项自上而下：${tabs.join("、")}（最后一项为红色破坏性操作）`;
+    }
+    case "iosAlert":
+      return `iOS 弹窗（标题${q(it.label)}${it.supporting ? `，内容${q(it.supporting)}` : ""}；按钮：${(it.tabs ?? []).map((t) => q(t.label)).join(" / ")}）`;
+    case "iosSearch":
+      return `iOS 搜索栏（占位符${q(it.label)}，带放大镜与语音图标）`;
     case "button":
       return `${hasText(it.label) ? q(it.label) : "无标签"}的${v}按钮${it.icon ? `（带 ${it.icon} 图标）` : ""}${buttonSize(it, "zh")}`;
     case "carousel":
@@ -589,6 +671,33 @@ function itemKo(it: Item): string {
   const v = VARIANT_TEXT.ko[it.variant];
   const noun = KIND_TEXT.ko[it.kind]?.noun ?? it.kind;
   switch (it.kind) {
+    /* ---------- iOS-style parts ---------- */
+    case "iosSegment": {
+      const tabs = (it.tabs ?? []).map((t) => q(t.label || "레이블 없음"));
+      return `세그먼트 ${tabs.length}개의 iOS 세그먼트 컨트롤(${tabs.join(", ")}; ${Math.min(it.selected ?? 0, tabs.length - 1) + 1}번째 세그먼트 선택됨)`;
+    }
+    case "iosNavBar":
+      return `큰 제목 «${it.label}»을 가진 iOS 내비게이션 바${it.icon ? `, 왼쪽에 ${it.icon}(뒤로 가기)` : ""}${it.icon2 ? `, 오른쪽에 ${it.icon2}` : ""}`;
+    case "iosToolbar": {
+      const icons = (it.tabs ?? []).map((t) => t.icon || "-").join(", ");
+      return `아이콘 작업 ${(it.tabs ?? []).length}개를 가진 iOS 툴바(하단 흐림 효과 바): ${icons}`;
+    }
+    case "iosList": {
+      const tabs = (it.tabs ?? []).map((t) => `${q(t.label)}${t.on !== undefined ? `(스위치 ${t.on ? "켜짐" : "꺼짐"})` : ""}`);
+      return `행 ${tabs.length}개의 iOS 그룹화 목록(둥근 카드에 ${tabs.join(", ")}; 각 행 끝은 셰브론 또는 스위치)`;
+    }
+    case "iosTabBar": {
+      const tabs = (it.tabs ?? []).map((t) => `${q(t.label || "레이블 없음")}(${t.icon || "아이콘 없음"})`);
+      return `항목 ${tabs.length}개의 iOS 탭 바(${tabs.join(", ")}; ${Math.min(it.selected ?? 0, tabs.length - 1) + 1}번째 선택됨, 하단에 홈 인디케이터)`;
+    }
+    case "iosSheet": {
+      const tabs = (it.tabs ?? []).map((t) => q(t.label));
+      return `iOS 액션 시트${hasText(it.label) ? `(제목: ${q(it.label)})` : ""}. 위에서부터 항목: ${tabs.join(", ")}(마지막 항목은 파괴적 작업으로 빨간색 표시)`;
+    }
+    case "iosAlert":
+      return `iOS 알림(제목 ${q(it.label)}${it.supporting ? `, 메시지 ${q(it.supporting)}` : ""}; 버튼: ${(it.tabs ?? []).map((t) => q(t.label)).join(" / ")})`;
+    case "iosSearch":
+      return `iOS 검색 필드(플레이스홀더 ${q(it.label)}, 돋보기 및 음성 아이콘 포함)`;
     case "button": return `${hasText(it.label) ? q(it.label) : "레이블 없는"} ${v} 버튼${it.icon ? `(${it.icon} 아이콘 포함)` : ""}${buttonSize(it, "ko")}`;
     case "carousel": return `${CAROUSEL_TEXT.ko[carouselLayoutOf(it)]} 레이아웃 캐러셀(카드 ${carouselCountOf(it)}장, 높이 ${it.size2 ?? 180}dp, 카드마다 모서리 16dp, 가로 스크롤${carouselCardsText(it, "ko")})`;
     case "datePicker": return `${DATE_TEXT.ko[dateLayoutOf(it)]} 형태의 날짜 선택기(오늘 날짜 선택됨${dateLayoutOf(it) === "input" ? "" : ", 월 그리드와 취소 / 확인"})`;
@@ -1201,6 +1310,14 @@ const STYLE_NOTES: Record<Lang, Partial<Record<Kind, string>>> = {
       "フローティングツールバー: M3 Expressive の HorizontalFloatingToolbar。高さ 64dp、角は完全な丸、画面下端から 16dp 上に浮かせ、内容の上に重ねる。スタンダードは surfaceContainer、ビブラントは primaryContainer。中のアイコンボタンは 48dp。",
     tabs: "タブ: M3 のプライマリタブ。高さ 48dp、ラベルは titleSmall、選択中のタブは primary の文字とラベル幅の 3dp インジケータ（上の角丸）、下に outlineVariant の区切り線。タブをタップすると内容が切り替わる。",
     radio: "ラジオボタン: 20dp の円。選択時は primary の枠と中央の点、未選択は onSurfaceVariant の枠。同じグループ内では 1 つだけ選べる。ラベルは右に bodyLarge。",
+    iosSegment: "iOS セグメントコントロール: 角丸 9dp のトラックに白いサムネイルを乗せ、選択中のセグメントを示す。セグメントは等幅。実装は各プラットフォームの標準的なセグメントコントロールで。",
+    iosNavBar: "iOS ナビゲーションバー: 大きいタイトル左揃え（34pt 相当の太字）。左に戻る、右に 1 つのアクション。スクロールで小さいタイトルへ縮む挙動を想定。",
+    iosToolbar: "iOS ツールバー: すりガラス（ブラー）の効いた下部バー。アイコンは等間隔、ラベルは付けない。",
+    iosList: "iOS のグループ化リスト: 角丸 10dp のカードに行を 44dp で重ね、行間は 0.5dp の極細線。行末はシェブロンか iOS スイッチ。",
+    iosTabBar: "iOS タブバー: 高さ 49dp（ホームインジケーター領域を含め 84dp）。アイコン + 10pt ラベル、選択タブはティント色。",
+    iosSheet: "iOS アクションシート: 下から出す角丸 14dp のカード。項目は 44dp 行で中央揃え、最後の項目は赤（破壊的操作）。キャンセルは別カードにする。",
+    iosAlert: "iOS アラート: 幅 270pt の中央モーダル。角丸 14dp、すりガラス地。タイトル 17pt 太字、本文 13pt、ボタンは下段に並べ縦線で分ける。最初のボタンを太字に。",
+    iosSearch: "iOS 検索フィールド: 角丸 10dp の薄いグレー地、左に虫めがね、右に音声入力。枠は付けない。",
   },
   en: {
     button:
@@ -1255,6 +1372,14 @@ const STYLE_NOTES: Record<Lang, Partial<Record<Kind, string>>> = {
       "Floating toolbar: the M3 Expressive HorizontalFloatingToolbar. 64dp tall, fully rounded, floating 16dp above the bottom edge over the content. Standard uses surfaceContainer, vibrant uses primaryContainer. The icon buttons inside are 48dp.",
     tabs: "Tabs: M3 primary tabs. 48dp tall, labels in titleSmall; the selected tab has primary text and a 3dp label-width indicator with rounded top corners, with an outlineVariant divider underneath. Tapping a tab switches the content.",
     radio: "Radio buttons: 20dp circles. Selected shows a primary ring with a center dot, unselected an onSurfaceVariant ring. Only one in a group can be selected. Label on the right in bodyLarge.",
+    iosSegment: "iOS segmented control: a rounded 9dp track with a white thumb marking the active segment; equal-width segments, 13pt semibold labels.",
+    iosNavBar: "iOS navigation bar with a large title: left-aligned 34pt bold title, a back control on the left and one action on the right; it collapses to an inline title on scroll.",
+    iosToolbar: "iOS toolbar: a bottom bar with a frosted blur, evenly spaced icons without labels.",
+    iosList: "iOS inset grouped list: rows 44dp apart inside a 10dp-radius card, separated by hairlines; each row ends in a chevron or an iOS switch.",
+    iosTabBar: "iOS tab bar: 49pt tall (84pt with the home-indicator area), icons with 10pt labels, the selected tab tinted; the home indicator sits over it.",
+    iosSheet: "iOS action sheet: a bottom card with 14dp corners, a grab handle, centered 44dp rows and the destructive option last in red; the cancel button lives on its own card.",
+    iosAlert: "iOS alert: a 270pt-wide centered modal with 14dp corners on frosted glass; 17pt semibold title, 13pt message, buttons along the bottom separated by hairlines, the primary one bold.",
+    iosSearch: "iOS search field: a 10dp-radius light-gray pill with a magnifier on the left and voice input on the right, no border.",
   },
   zh: {
     button:
@@ -1307,6 +1432,14 @@ const STYLE_NOTES: Record<Lang, Partial<Record<Kind, string>>> = {
       "悬浮工具栏：M3 Expressive 的 HorizontalFloatingToolbar。高 64dp，完全圆角，悬浮在距屏幕底部 16dp 处并覆盖在内容之上。标准样式用 surfaceContainer，鲜明样式用 primaryContainer。内部图标按钮 48dp。",
     tabs: "标签页：M3 的主标签页。高 48dp，标签用 titleSmall，选中项文字为 primary 并带与标签同宽的 3dp 指示条（上方圆角），下方为 outlineVariant 分割线。点击标签切换内容。",
     radio: "单选按钮：20dp 圆形。选中时为 primary 的圆环加中心圆点，未选中为 onSurfaceVariant 圆环。同一组内只能选一个。标签在右侧，用 bodyLarge。",
+    iosSegment: "iOS 分段控件：9dp 圆角轨道，白色滑块标记选中段；各段等宽，13pt 半粗标签。",
+    iosNavBar: "iOS 大标题导航栏：左对齐 34pt 粗体标题，左侧返回、右侧一个操作；滚动时收起为小标题。",
+    iosToolbar: "iOS 工具栏：底部毛玻璃条，图标等距排列、不带文字。",
+    iosList: "iOS 分组圆角列表：10dp 圆角卡片内 44dp 行高，行间 0.5dp 发丝线；行尾为箭头或 iOS 开关。",
+    iosTabBar: "iOS 底部标签栏：高 49pt（含 Home 指示条区域共 84pt），图标 + 10pt 标签，选中项着色。",
+    iosSheet: "iOS 操作菜单：底部 14dp 圆角卡片，带抓手，44dp 居中行，破坏性选项最后一项标红；取消按钮单独一张卡片。",
+    iosAlert: "iOS 弹窗：宽 270pt 居中模态，14dp 圆角毛玻璃；17pt 半粗标题、13pt 正文，按钮排底部以发丝线分隔，主按钮加粗。",
+    iosSearch: "iOS 搜索栏：10dp 圆角浅灰底，左侧放大镜、右侧语音输入，无描边。",
   },
   ko: {
     button: "버튼: 높이 56dp의 중간 크기, 완전 둥근 알약 모양. 채움은 primary, 토널은 secondaryContainer, 윤곽선은 1dp outline 테두리를 사용한다. 연결 버튼 그룹은 간격 3dp, 맞닿는 안쪽 모서리 8dp, 바깥쪽 모서리는 둥글게 유지한다. 높이가 지정된 버튼은 M3 크기(XS 32dp / S 40dp / M 56dp / L 96dp / XL 136dp)를 따라 좌우 여백, 글자 크기, 아이콘 크기를 그 크기의 값으로 하고 모서리는 높이의 절반으로 한다.",
@@ -1349,6 +1482,14 @@ const STYLE_NOTES: Record<Lang, Partial<Record<Kind, string>>> = {
     toolbar: "플로팅 도구 모음: M3 Expressive HorizontalFloatingToolbar. 높이 64dp, 완전 둥근 모서리로 화면 아래쪽에서 16dp 띄운다. 표준은 surfaceContainer, 비브런트는 primaryContainer, 내부 아이콘 버튼은 48dp.",
     tabs: "탭: M3 기본 탭. 높이 48dp, 레이블 titleSmall. 선택 탭은 primary 텍스트와 레이블 너비의 3dp 표시기를 사용하고 아래에 outlineVariant 구분선을 둔다.",
     radio: "라디오 버튼: 20dp 원형. 선택 시 primary 테두리와 가운데 점, 미선택 시 onSurfaceVariant 테두리. 그룹에서 하나만 선택되며 레이블은 오른쪽 bodyLarge.",
+    iosSegment: "iOS 세그먼트 컨트롤: 9dp 둥근 트랙에 흰색 썸이 선택된 세그먼트를 표시한다. 세그먼트는 등폭, 13pt 굵은 레이블.",
+    iosNavBar: "큰 제목 iOS 내비게이션 바: 왼쪽 정렬 34pt 굵은 제목, 왼쪽에 뒤로 가기, 오른쪽에 작업 하나. 스크롤하면 인라인 제목으로 줄어든다.",
+    iosToolbar: "iOS 툴바: 흐림 효과가 있는 하단 바, 간격이 일정한 아이콘만 놓는다.",
+    iosList: "iOS 그룹화 목록: 10dp 둥근 카드 안에 44dp 행을 쌓고 0.5dp 헤어라인으로 구분한다. 행 끝은 셰브론 또는 iOS 스위치.",
+    iosTabBar: "iOS 탭 바: 49pt(홈 인디케이터 영역 포함 84pt), 아이콘과 10pt 레이블, 선택된 탭은 틴트색.",
+    iosSheet: "iOS 액션 시트: 아래에서 올라오는 14dp 둥근 카드, 그랩 핸들, 44dp 가운데 정렬 행, 마지막 파괴적 항목은 빨간색. 취소 버튼은 별도 카드에 둔다.",
+    iosAlert: "iOS 알림: 너비 270pt 중앙 모달, 14dp 둥근 모서리와 흐림 효과. 17pt 굵은 제목, 13pt 메시지, 버튼은 하단에 헤어라인으로 구분해 배치하고 기본 버튼을 굵게.",
+    iosSearch: "iOS 검색 필드: 10dp 둥근 밝은 회색 알약 모양, 왼쪽 돋보기와 오른쪽 음성 입력, 테두리 없음.",
   },
 };
 
@@ -1428,29 +1569,29 @@ function themeLines(th: Theme, lang: Lang): string[] {
 const GENERAL: Record<Lang, (string | ((pl: Platform) => string))[]> = {
   ja: [
     "まず画面の目的から「これは何のアプリか」を判断し、そのカテゴリのアプリとして一般に期待される機能（作成・一覧・詳細・編集・削除・検索・設定など、該当するもの）を、スケッチに描かれていなくても一通り実装する。",
-    (pl: Platform) => `データは本物として扱う。ユーザーが作成したデータは${pl === "web" ? "ブラウザに（IndexedDB など）" : "端末に（Room や DataStore など）"}永続化し、${pl === "web" ? "再読み込み" : "再起動"}後も残す。ダミーやサンプルのデータは入れず、何もない状態には空の案内を表示する。入力は検証し、失敗や削除は適切に確認・通知する。`,
+    (pl: Platform) => `データは本物として扱う。ユーザーが作成したデータは${pl === "web" ? "ブラウザに（IndexedDB など）" : pl === "ios" ? "端末に（SwiftData など）" : "端末に（Room や DataStore など）"}永続化し、${pl === "web" ? "再読み込み" : "再起動"}後も残す。ダミーやサンプルのデータは入れず、何もない状態には空の案内を表示する。入力は検証し、失敗や削除は適切に確認・通知する。`,
     "スケッチに書かれていない振る舞いは、画面の目的と部品のラベルから補う。動作の指定がないボタンや項目は、そのラベルにふさわしい処理（保存、送信、詳細画面を開く、など）を実装し、何も起きないままにしない。",
     "配置は意図（順序・まとまり・上下左右の位置関係）を守れば十分で、寸法や余白は内容に合わせて調整してよい。実機で崩れるなら、スケッチより動くことを優先する。",
-    (pl: Platform) => `コンポーネントは ${pl === "web" ? "Material Web" : "Jetpack Compose の material3（Expressive API を含む最新版）"} の標準部品を使い、ライブラリにある部品を独自描画しない。`,
+    (pl: Platform) => `コンポーネントは ${pl === "web" ? "Material Web" : pl === "ios" ? "SwiftUI の標準部品" : "Jetpack Compose の material3（Expressive API を含む最新版）"} の標準部品を使い、ライブラリにある部品を独自描画しない。`,
     "色は必ず上のカラースキームのロール名（primary、surfaceContainer など）で参照し、ハードコードした色を使わない。",
     "余白は画面端 16dp、部品同士は 8〜16dp を基本にし、タイポグラフィは M3 の型（titleLarge、bodyMedium など）を使う。",
     "「横一列に並べる」と書いた部品は必ず 1 つの Row（横並びコンテナ）に入れて同じ行に置き、縦に積んだり次の行に折り返したりしない。行の高さは一番高い部品に合わせ、他は縦中央に揃える。",
     "「〜の中に重ねて配置」と書いた部品は、その容器（ボックスやカード）を背景にした Box の上に重ねて描く。重なりは意図したものなので、レイアウトの都合で分離したり順序を変えたりしない。前後関係は記述の順（後に書いたものが前面）に従う。",
     "タップできる部品にはリップルと軽い縮小のフィードバックを付ける。「戻る」は入ったときの遷移を逆再生し、システムの戻る操作（戻るジェスチャー・戻るボタン）でも同じ動きにする。",
-    "アイコンは Material Symbols Rounded を使う。",
+    (pl) => (pl === "ios" ? "アイコンは SF Symbols を使う。" : "アイコンは Material Symbols Rounded を使う。"),
   ],
   en: [
     "Work out what kind of app this is from the purpose of the screens, and implement the features such an app is normally expected to have (create, list, detail, edit, delete, search, settings, whichever apply) even where the sketch does not show them.",
-    (pl: Platform) => `Treat the data as real. Persist what the user creates ${pl === "web" ? "in the browser (IndexedDB or similar) so it survives reloads" : "on the device (Room, DataStore or similar) so it survives restarts"}. Do not ship dummy or sample data; show an empty state when there is nothing yet. Validate input, and confirm or report failures and deletions appropriately.`,
+    (pl: Platform) => `Treat the data as real. Persist what the user creates ${pl === "web" ? "in the browser (IndexedDB or similar) so it survives reloads" : pl === "ios" ? "on the device (SwiftData or similar) so it survives restarts" : "on the device (Room, DataStore or similar) so it survives restarts"}. Do not ship dummy or sample data; show an empty state when there is nothing yet. Validate input, and confirm or report failures and deletions appropriately.`,
     "Fill in behavior the sketch leaves out from the purpose of the screen and the labels of the parts. A button or item with no behavior specified should do what its label implies (save, send, open a detail screen, and so on), never nothing.",
     "The layout only needs to keep the intent (order, grouping, relative placement); sizes and spacing may be adjusted to fit the content. If something would break on a device, prefer working over matching the sketch.",
-    (pl: Platform) => `Use the standard components from ${pl === "web" ? "Material Web" : "Jetpack Compose material3 (latest, including the Expressive APIs)"}; do not custom-draw parts the library provides.`,
+    (pl: Platform) => `Use the standard components from ${pl === "web" ? "Material Web" : pl === "ios" ? "SwiftUI (standard components)" : "Jetpack Compose material3 (latest, including the Expressive APIs)"}; do not custom-draw parts the library provides.`,
     "Always reference colors through the scheme roles above (primary, surfaceContainer, …) instead of hard-coded values.",
     "Keep 16dp screen margins and 8–16dp between parts, and use the M3 type styles (titleLarge, bodyMedium, …).",
     "Parts described as \"in one row\" must share a single Row (horizontal container) on the same line; never stack them vertically or wrap them. The row is as tall as its tallest part and the others are vertically centered in it.",
     "Parts described as \"layered inside\" a container are drawn on top of that container (a Box with the container as its background). The overlap is intentional: do not separate or reorder them for layout reasons. Later items in the description are drawn in front of earlier ones.",
     "Give every tappable part ripple plus a slight press-scale. \"Back\" plays the entry transition in reverse, and the system back gesture / button must do the same.",
-    "Use Material Symbols Rounded for icons.",
+    (pl) => (pl === "ios" ? "Use SF Symbols for icons." : "Use Material Symbols Rounded for icons."),
   ],
   zh: [
     "先根据屏幕目的判断这是什么类型的应用，并实现该类应用通常应有的功能（新建、列表、详情、编辑、删除、搜索、设置等，视情况而定），即使草图中没有画出。",
@@ -1463,7 +1604,7 @@ const GENERAL: Record<Lang, (string | ((pl: Platform) => string))[]> = {
     "写明“横向排成一行”的组件必须放进同一个 Row（横向容器）并在同一行显示，不要竖着堆叠或换行。行高以最高的组件为准，其余组件垂直居中。",
     "写明“内部叠放”的组件要绘制在该容器（容器框或卡片）之上（以容器为背景的 Box）。这种叠放是有意为之，不要因布局原因拆开或调整顺序。前后关系按描述顺序，后写的在前面。",
     "可点击的组件加涟漪和轻微缩放反馈。“返回”反向播放进入时的过渡动画，系统返回手势／返回键也要做同样的效果。",
-    "图标使用 Material Symbols Rounded。",
+    (pl) => (pl === "ios" ? "图标使用 SF Symbols。" : "图标使用 Material Symbols Rounded。"),
   ],
   ko: [
     "화면의 목적에서 앱의 종류를 판단하고, 스케치에 없더라도 그 종류의 앱에 일반적으로 필요한 기능(만들기, 목록, 상세, 편집, 삭제, 검색, 설정 등)을 구현한다.",
@@ -1476,7 +1617,7 @@ const GENERAL: Record<Lang, (string | ((pl: Platform) => string))[]> = {
     "'한 행에 배치'한 부품은 하나의 Row(가로 컨테이너)에서 같은 줄에 두고 세로로 쌓거나 줄 바꿈하지 않는다. 행 높이는 가장 높은 부품에 맞추고 나머지는 세로 중앙 정렬한다.",
     "'내부에 겹쳐 배치'한 부품은 해당 컨테이너(상자 또는 카드)를 배경으로 하는 Box 위에 그린다. 이 겹침은 의도된 것이므로 분리하거나 순서를 바꾸지 않으며 나중에 설명된 항목을 앞에 그린다.",
     "탭 가능한 부품에는 리플과 약한 축소 피드백을 준다. '뒤로'는 진입 전환을 반대로 재생하고 시스템 뒤로 제스처나 버튼도 같은 동작을 수행한다.",
-    "아이콘은 Material Symbols Rounded를 사용한다.",
+    (pl) => (pl === "ios" ? "아이콘은 SF Symbols를 사용한다." : "아이콘은 Material Symbols Rounded를 사용한다."),
   ],
 };
 
@@ -1503,18 +1644,26 @@ const STYLE_NOTES_WEB: Record<Lang, Partial<Record<Kind, string>>> = {
 /* ---------- fixed phrases ---------- */
 
 /** what the screens are drawn for: phones only, desktops only, both, or no screens at all */
-type Viewport = "phone" | "desktop" | "mixed" | "free";
+type Viewport = "phone" | "iphone" | "tablet" | "web" | "desktop" | "win" | "mixed" | "free";
 const viewportOf = (frames: Frame[], phone: boolean): Viewport => {
   if (!phone || frames.length === 0) return "free";
-  const phones = frames.filter(isPhoneFrame).length;
-  return phones === frames.length ? "phone" : phones === 0 ? "desktop" : "mixed";
+  const first = framePresetOf(frames[0]);
+  return frames.every((f) => framePresetOf(f) === first) ? first : "mixed";
 };
 /** a screen's size, written only when the document mixes sizes */
 const sizeLabel = (f: Frame, vp: Viewport, lang: Lang): string | undefined => {
   if (vp !== "mixed") return undefined;
   const { w, h } = frameSizeOf(f);
-  const kind = isPhoneFrame(f) ? { ja: "スマホ", en: "phone", zh: "手机", ko: "휴대전화" } : { ja: "デスクトップ", en: "desktop", zh: "桌面", ko: "데스크톱" };
-  return `${kind[lang]} ${w}×${h}`;
+  const kindBy = (k: Record<string, Record<Lang, string>>) => (k[framePresetOf(f)] ?? k.desktop)[lang];
+  const kind = kindBy({
+    phone: { ja: "スマホ", en: "phone", zh: "手机", ko: "휴대전화" },
+    iphone: { ja: "iPhone", en: "iPhone", zh: "iPhone", ko: "iPhone" },
+    tablet: { ja: "タブレット", en: "tablet", zh: "平板", ko: "태블릿" },
+    web: { ja: "Web ページ", en: "web page", zh: "网页", ko: "웹 페이지" },
+    desktop: { ja: "デスクトップ", en: "desktop", zh: "桌面", ko: "데스크톱" },
+    win: { ja: "デスクトップ", en: "desktop", zh: "桌面", ko: "데스크톱" },
+  });
+  return `${kind} ${w}×${h}`;
 };
 
 const PH = {
@@ -1527,15 +1676,26 @@ const PH = {
       `${
         vp === "phone"
           ? "想定はスマホの縦画面（412×892dp）で、"
-          : vp === "desktop"
-            ? pl === "web"
-              ? "想定はデスクトップのブラウザ画面（基準 1280×800）で、"
-              : "想定は横向きのタブレット画面（基準 1280×800dp）で、"
-            : vp === "mixed"
-              ? `スマホの縦画面（412×892）と${pl === "web" ? "デスクトップのブラウザ画面" : "横向きのタブレット画面"}（1280×800）の両方を想定し、同じ名前の画面は 1 つの画面の 2 つの幅として、レスポンシブに実装します。`
-              : "レイアウトは自由配置で、"
+          : vp === "iphone"
+            ? "想定は iPhone の縦画面（393×852pt）で、"
+            : vp === "tablet"
+              ? "想定はタブレット画面（834×1112dp）で、"
+              : vp === "web"
+                ? "想定は Web ページの画面（1440×900）で、"
+                : vp === "desktop" || vp === "win"
+                  ? pl === "web"
+                    ? "想定はデスクトップのブラウザ画面（基準 1280×800）で、"
+                    : "想定は横向きのタブレット画面（基準 1280×800dp）で、"
+                  : vp === "mixed"
+                    ? `スマホの縦画面（412×892）と${pl === "web" ? "デスクトップのブラウザ画面" : "横向きのタブレット画面"}（1280×800）の両方を想定し、同じ名前の画面は 1 つの画面の 2 つの幅として、レスポンシブに実装します。`
+                    : "レイアウトは自由配置で、"
       }${both ? "ライトモードとダークモードの両方に対応し、端末のシステム設定に従って切り替えます。" : dark ? "ダークモード固定です。" : "ライトモード固定です。"}`,
-    platform: (pl: Platform) => (pl === "web" ? "実装先は Web（ブラウザで動くアプリ）です。" : "実装先は Android（ネイティブアプリ）です。"),
+    platform: (pl: Platform) =>
+      pl === "web"
+        ? "実装先は Web（ブラウザで動くアプリ）です。"
+        : pl === "ios"
+          ? "実装先は iOS（iPhone のネイティブアプリ）です。Apple の Human Interface Guidelines に従ってください。"
+          : "実装先は Android（ネイティブアプリ）です。",
     schemeHead: (dark: boolean) => (dark ? "ダークスキーム:" : "ライトスキーム:"),
     sketch:
       "下の画面構成は、意図を伝えるためのラフスケッチです。完成図の仕様ではないので、静止画のように再現するのではなく、この種のアプリとして普通に期待される機能を一通り備えた、実際に使える完成品として仕上げてください。",
@@ -1543,7 +1703,9 @@ const PH = {
     dynamic: (pl: Platform) =>
       pl === "web"
         ? "ダイナミックカラーを使います。ブラウザや OS がユーザーのアクセントカラーを公開している場合はそれを種にして Material 3 のスキームを生成し、取得できない環境では下の色をフォールバックにしてください。"
-        : "ダイナミックカラーを使います。Android 12 以降ではユーザーの壁紙から生成されるカラースキーム（dynamicLightColorScheme / dynamicDarkColorScheme）を適用し、それが使えない端末では下の色をフォールバックにしてください。",
+        : pl === "ios"
+          ? "ライト / ダークの外観はシステム設定に従い、アクセントとなる操作色は下のブランドパレットから取ってください。壁紙由来のダイナミックカラーはiOS 独自の機能ではないため、使わなくて構いません。"
+          : "ダイナミックカラーを使います。Android 12 以降ではユーザーの壁紙から生成されるカラースキーム（dynamicLightColorScheme / dynamicDarkColorScheme）を適用し、それが使えない端末では下の色をフォールバックにしてください。",
     colorIntro: (label: string, fallback: boolean, th: Theme) => {
       const scheme = `Material 3 の${th.bothModes ? "ライトとダークの" : th.dark ? "ダーク" : "ライト"}カラースキーム${th.contrast === "high" ? "（高コントラスト）" : th.contrast === "medium" ? "（中コントラスト）" : ""}`;
       return `${fallback ? "フォールバック用のテーマ" : "テーマ"}は ${label} 系です。${scheme}に次の色を設定し、UI の色はすべてこのロール経由で参照してください。`;
@@ -1571,15 +1733,26 @@ const PH = {
       `${
         vp === "phone"
           ? "Target a portrait phone screen (412×892dp)"
-          : vp === "desktop"
-            ? pl === "web"
-              ? "Target a desktop browser viewport (1280×800 reference)"
-              : "Target a landscape tablet screen (1280×800dp reference)"
-            : vp === "mixed"
-              ? `Target both a portrait phone (412×892) and a ${pl === "web" ? "desktop browser viewport" : "landscape tablet"} (1280×800); screens that share a name are one screen at two widths, so build them responsively`
-              : "The layout is free-form"
+          : vp === "iphone"
+            ? "Target a portrait iPhone screen (393×852pt)"
+            : vp === "tablet"
+              ? "Target a tablet screen (834×1112dp)"
+              : vp === "web"
+                ? "Target a web page canvas (1440×900 reference)"
+                : vp === "desktop" || vp === "win"
+                  ? pl === "web"
+                    ? "Target a desktop browser viewport (1280×800 reference)"
+                    : "Target a landscape tablet screen (1280×800dp reference)"
+                  : vp === "mixed"
+                    ? `Target both a portrait phone (412×892) and a ${pl === "web" ? "desktop browser viewport" : "landscape tablet"} (1280×800); screens that share a name are one screen at two widths, so build them responsively`
+                    : "The layout is free-form"
       }, ${both ? "supporting both light and dark mode and following the device's system setting" : `${dark ? "dark" : "light"} mode only`}.`,
-    platform: (pl: Platform) => (pl === "web" ? "Build it for the web, as an app that runs in the browser." : "Build it for Android, as a native app."),
+    platform: (pl: Platform) =>
+      pl === "web"
+        ? "Build it for the web, as an app that runs in the browser."
+        : pl === "ios"
+          ? "Build it for iOS, as a native iPhone app that follows Apple's Human Interface Guidelines."
+          : "Build it for Android, as a native app.",
     schemeHead: (dark: boolean) => (dark ? "Dark scheme:" : "Light scheme:"),
     sketch:
       "The layout below is a rough sketch that conveys intent, not a finished spec. Do not reproduce it as a static picture; build the complete, usable app that this kind of product is normally expected to be.",
@@ -1587,7 +1760,9 @@ const PH = {
     dynamic: (pl: Platform) =>
       pl === "web"
         ? "Use dynamic color: where the browser or OS exposes the user's accent color, generate the Material 3 scheme from it as the seed, and fall back to the colors below where it is unavailable."
-        : "Use dynamic color: on Android 12+ apply the scheme generated from the user's wallpaper (dynamicLightColorScheme / dynamicDarkColorScheme), and fall back to the colors below where it is unavailable.",
+        : pl === "ios"
+          ? "Follow the system setting for light and dark appearance, and take the accent tint for interactive elements from the brand palette below; wallpaper-derived dynamic color is not an iOS convention, so it need not be reproduced."
+          : "Use dynamic color: on Android 12+ apply the scheme generated from the user's wallpaper (dynamicLightColorScheme / dynamicDarkColorScheme), and fall back to the colors below where it is unavailable.",
     colorIntro: (label: string, fallback: boolean, th: Theme) => {
       const scheme = `Material 3 ${th.bothModes ? "light and dark color schemes" : `${th.dark ? "dark" : "light"} color scheme`}${th.contrast === "high" ? " (high contrast)" : th.contrast === "medium" ? " (medium contrast)" : ""}`;
       return `The ${fallback ? "fallback theme" : "theme"} is ${label}. Set these on the ${scheme} and reference every UI color through its role.`;
@@ -1615,15 +1790,26 @@ const PH = {
       `${
         vp === "phone"
           ? "目标为竖屏手机（412×892dp）"
-          : vp === "desktop"
-            ? pl === "web"
-              ? "目标为桌面浏览器视口（以 1280×800 为基准）"
-              : "目标为横屏平板（以 1280×800dp 为基准）"
-            : vp === "mixed"
-              ? `同时面向竖屏手机（412×892）和${pl === "web" ? "桌面浏览器视口" : "横屏平板"}（1280×800）；同名的屏幕是同一个屏幕的两种宽度，请做成响应式`
-              : "布局为自由排布"
+          : vp === "iphone"
+            ? "目标为竖屏 iPhone 屏幕（393×852pt）"
+            : vp === "tablet"
+              ? "目标为平板屏幕（834×1112dp）"
+              : vp === "web"
+                ? "目标为网页画布（以 1440×900 为基准）"
+                : vp === "desktop" || vp === "win"
+                  ? pl === "web"
+                    ? "目标为桌面浏览器视口（以 1280×800 为基准）"
+                    : "目标为横屏平板（以 1280×800dp 为基准）"
+                  : vp === "mixed"
+                    ? `同时面向竖屏手机（412×892）和${pl === "web" ? "桌面浏览器视口" : "横屏平板"}（1280×800）；同名的屏幕是同一个屏幕的两种宽度，请做成响应式`
+                    : "布局为自由排布"
       }，${both ? "同时支持浅色和深色模式，并跟随设备的系统设置切换" : `只做${dark ? "深色" : "浅色"}模式`}。`,
-    platform: (pl: Platform) => (pl === "web" ? "实现目标是 Web（在浏览器中运行的应用）。" : "实现目标是 Android（原生应用）。"),
+    platform: (pl: Platform) =>
+      pl === "web"
+        ? "实现目标是 Web（在浏览器中运行的应用）。"
+        : pl === "ios"
+          ? "实现目标是 iOS（iPhone 原生应用），请遵循 Apple 的 Human Interface Guidelines。"
+          : "实现目标是 Android（原生应用）。",
     schemeHead: (dark: boolean) => (dark ? "深色配色：" : "浅色配色："),
     sketch:
       "下面的屏幕结构是传达意图的草图，不是最终规格。不要把它当静态图片照搬，而要做成这类应用通常应具备的功能齐全、真正可用的成品。",
@@ -1631,7 +1817,9 @@ const PH = {
     dynamic: (pl: Platform) =>
       pl === "web"
         ? "使用动态配色：浏览器或系统提供用户强调色时，以它为种子生成 Material 3 配色方案；无法获取时使用下面的颜色作为备用。"
-        : "使用动态配色：在 Android 12 及以上应用由用户壁纸生成的配色方案（dynamicLightColorScheme / dynamicDarkColorScheme），不支持的设备则使用下面的颜色作为备用。",
+        : pl === "ios"
+          ? "浅色 / 深色外观跟随系统设置；交互元素的强调色取自下面的品牌配色。iOS 没有壁纸取色的惯例，无需模拟该效果。"
+          : "使用动态配色：在 Android 12 及以上应用由用户壁纸生成的配色方案（dynamicLightColorScheme / dynamicDarkColorScheme），不支持的设备则使用下面的颜色作为备用。",
     colorIntro: (label: string, fallback: boolean, th: Theme) => {
       const scheme = `Material 3 的${th.bothModes ? "浅色和深色" : th.dark ? "深色" : "浅色"}配色方案${th.contrast === "high" ? "（高对比度）" : th.contrast === "medium" ? "（中对比度）" : ""}`;
       return `${fallback ? "备用主题" : "主题"}为 ${label} 系。请在${scheme}中设置以下颜色，UI 的所有颜色都通过这些角色引用。`;
@@ -1655,12 +1843,12 @@ const PH = {
     intro: (title: string, brief: string) => `Material 3 Expressive 디자인으로 구현해 주세요: ${title}.${brief ? ` ${trimEnd(brief)}.` : ""}`,
     titleOnly: (name: string) => `${name} 화면`,
     titleAll: (n: number) => (n > 1 ? "이 앱" : "이 화면"),
-    target: (vp: Viewport, pl: Platform, dark: boolean, both: boolean) => `${vp === "phone" ? "세로형 휴대전화 화면(412×892dp)을 대상으로 하며" : vp === "desktop" ? `${pl === "web" ? "데스크톱 브라우저" : "가로형 태블릿"} 화면(1280×800 기준)을 대상으로 하며` : vp === "mixed" ? `세로형 휴대전화(412×892)와 ${pl === "web" ? "데스크톱 브라우저" : "가로형 태블릿"}(1280×800)을 모두 지원하며, 이름이 같은 화면은 서로 다른 너비의 동일한 화면이므로 반응형으로 구현하고` : "레이아웃은 자유 배치이며"}, ${both ? "라이트 모드와 다크 모드를 모두 지원하고 기기의 시스템 설정을 따른다" : `${dark ? "다크" : "라이트"} 모드만 지원한다`}.`,
-    platform: (pl: Platform) => (pl === "web" ? "브라우저에서 실행되는 웹 앱으로 구현한다." : "Android 네이티브 앱으로 구현한다."),
+    target: (vp: Viewport, pl: Platform, dark: boolean, both: boolean) => `${vp === "phone" ? "세로형 휴대전화 화면(412×892dp)을 대상으로 하며" : vp === "iphone" ? "세로형 iPhone 화면(393×852pt)을 대상으로 하며" : vp === "tablet" ? "태블릿 화면(834×1112dp)을 대상으로 하며" : vp === "web" ? "웹 페이지 화면(1440×900 기준)을 대상으로 하며" : vp === "desktop" || vp === "win" ? `${pl === "web" ? "데스크톱 브라우저" : "가로형 태블릿"} 화면(1280×800 기준)을 대상으로 하며` : vp === "mixed" ? `세로형 휴대전화(412×892)와 ${pl === "web" ? "데스크톱 브라우저" : "가로형 태블릿"}(1280×800)을 모두 지원하며, 이름이 같은 화면은 서로 다른 너비의 동일한 화면이므로 반응형으로 구현하고` : "레이아웃은 자유 배치이며"}, ${both ? "라이트 모드와 다크 모드를 모두 지원하고 기기의 시스템 설정을 따른다" : `${dark ? "다크" : "라이트"} 모드만 지원한다`}.`,
+    platform: (pl: Platform) => (pl === "web" ? "브라우저에서 실행되는 웹 앱으로 구현한다." : pl === "ios" ? "iOS(iPhone 네이티브 앱)로 구현하며, Apple의 Human Interface Guidelines를 따른다." : "Android 네이티브 앱으로 구현한다."),
     schemeHead: (dark: boolean) => (dark ? "다크 색상 구성:" : "라이트 색상 구성:"),
     sketch: "아래 화면 구성은 의도를 전달하는 대략적인 스케치이며 완성 사양이 아니다. 정적인 그림처럼 복제하지 말고 이 종류의 제품에 일반적으로 필요한 기능을 갖춘 실제 사용 가능한 앱으로 완성한다.",
     hColor: "## 색상",
-    dynamic: (pl: Platform) => pl === "web" ? "동적 색상을 사용한다. 브라우저나 운영체제에서 사용자의 강조 색상을 제공하면 이를 기준으로 Material 3 색상 구성을 생성하고, 사용할 수 없으면 아래 색상으로 대체한다." : "동적 색상을 사용한다. Android 12 이상에서는 사용자 배경화면에서 생성된 색상 구성(dynamicLightColorScheme / dynamicDarkColorScheme)을 적용하고 사용할 수 없는 기기에서는 아래 색상을 대체 값으로 사용한다.",
+    dynamic: (pl: Platform) => pl === "web" ? "동적 색상을 사용한다. 브라우저나 운영체제에서 사용자의 강조 색상을 제공하면 이를 기준으로 Material 3 색상 구성을 생성하고, 사용할 수 없으면 아래 색상으로 대체한다." : pl === "ios" ? "라이트/다크 외관은 시스템 설정을 따르고, 대화형 요소의 강조 색은 아래 브랜드 팔레트에서 가져온다. 배경화면 기반 동적 색상은 iOS의 관례가 아니므로 재현하지 않아도 된다." : "동적 색상을 사용한다. Android 12 이상에서는 사용자 배경화면에서 생성된 색상 구성(dynamicLightColorScheme / dynamicDarkColorScheme)을 적용하고 사용할 수 없는 기기에서는 아래 색상을 대체 값으로 사용한다.",
     colorIntro: (label: string, fallback: boolean, th: Theme) => {
       const scheme = `Material 3 ${th.bothModes ? "라이트 및 다크" : th.dark ? "다크" : "라이트"} 색상 구성${th.contrast === "high" ? "(고대비)" : th.contrast === "medium" ? "(중간 대비)" : ""}`;
       return `${fallback ? "대체 테마" : "테마"}는 ${label} 계열이다. ${scheme}에 다음 색상을 설정하고 모든 UI 색상을 해당 역할로 참조한다.`;
@@ -1691,28 +1879,28 @@ export const isPromptOption = (v: unknown): v is PromptOption => PROMPT_OPTIONS.
 export const promptOptionsOf = (doc: Pick<Doc, "promptOptions">): PromptOption[] => (doc.promptOptions ? doc.promptOptions.filter(isPromptOption) : DEFAULT_PROMPT_OPTIONS);
 export const PROMPT_OPTION_TEXT: Record<Lang, Record<PromptOption, { label: string; icon: string; line: string | ((pl: Platform) => string) }>> = {
   ja: {
-    deliverable: { label: "検証不要・成果物のみ", icon: "package_2", line: (pl) => `${pl === "web" ? "ブラウザでの" : "エミュレータや実機での"}動作検証は不要。実装が終わったら${pl === "web" ? "production build を実行し、その出力" : "署名済みの release APK "}を成果物として提供する。` },
+    deliverable: { label: "検証不要・成果物のみ", icon: "package_2", line: (pl) => `${pl === "web" ? "ブラウザでの" : pl === "ios" ? "シミュレータや実機での" : "エミュレータや実機での"}動作検証は不要。実装が終わったら${pl === "web" ? "production build を実行し、その出力" : pl === "ios" ? "シミュレータで動く Xcode プロジェクトのビルド" : "署名済みの release APK "}を成果物として提供する。` },
     tests: { label: "テストを書く", icon: "science", line: "主要なロジックにユニットテストを書き、すべて通る状態で提出する。" },
     darkMode: { label: "ダークモード対応", icon: "dark_mode", line: "ライトとダークの両方のカラースキームに対応し、システム設定に追従する。" },
     languages: { label: "日本語と英語", icon: "translate", line: "UI の文言は日本語と英語の両方を用意し、端末の言語設定に追従する。" },
     offline: { label: "オフライン対応", icon: "cloud_off", line: "ネットワークがなくても主要な機能が使えるようにし、必要なら再接続時に同期する。" },
   },
   en: {
-    deliverable: { label: "No verification, deliverable only", icon: "package_2", line: (pl) => `Do not verify ${pl === "web" ? "in a browser" : "on an emulator or a device"}. When the implementation is done, ${pl === "web" ? "run the production build and provide its output" : "produce a signed release APK"} as the deliverable.` },
+    deliverable: { label: "No verification, deliverable only", icon: "package_2", line: (pl) => `Do not verify ${pl === "web" ? "in a browser" : pl === "ios" ? "in a simulator or on a device" : "on an emulator or a device"}. When the implementation is done, ${pl === "web" ? "run the production build and provide its output" : pl === "ios" ? "provide an Xcode project that builds and runs in the iOS Simulator" : "produce a signed release APK"} as the deliverable.` },
     tests: { label: "Write tests", icon: "science", line: "Write unit tests for the main logic and hand it over with all of them passing." },
     darkMode: { label: "Dark mode", icon: "dark_mode", line: "Support both the light and the dark color scheme, following the system setting." },
     languages: { label: "Japanese and English", icon: "translate", line: "Provide the UI text in both Japanese and English, following the device language." },
     offline: { label: "Works offline", icon: "cloud_off", line: "Keep the main features usable without a network, syncing when it returns if needed." },
   },
   zh: {
-    deliverable: { label: "无需验证，仅交付成果", icon: "package_2", line: (pl) => `不需要在${pl === "web" ? "浏览器" : "模拟器或真机"}上验证。实现完成后${pl === "web" ? "运行 production build 并提供其输出" : "生成已签名的 release APK "}作为交付物。` },
+    deliverable: { label: "无需验证，仅交付成果", icon: "package_2", line: (pl) => `不需要在${pl === "web" ? "浏览器" : pl === "ios" ? "模拟器或真机" : "模拟器或真机"}上验证。实现完成后${pl === "web" ? "运行 production build 并提供其输出" : pl === "ios" ? "提供可在 iOS 模拟器中构建运行的 Xcode 工程" : "生成已签名的 release APK "}作为交付物。` },
     tests: { label: "编写测试", icon: "science", line: "为主要逻辑编写单元测试，并在全部通过的状态下交付。" },
     darkMode: { label: "支持深色模式", icon: "dark_mode", line: "同时支持浅色与深色配色方案，并跟随系统设置。" },
     languages: { label: "日语和英语", icon: "translate", line: "UI 文案同时提供日语和英语，并跟随设备语言设置。" },
     offline: { label: "支持离线", icon: "cloud_off", line: "在没有网络时也能使用主要功能，必要时在重新连接后同步。" },
   },
   ko: {
-    deliverable: { label: "검증 없이 결과물만", icon: "package_2", line: (pl) => `${pl === "web" ? "브라우저" : "에뮬레이터나 실제 기기"} 동작 검증은 필요 없다. 구현 후 ${pl === "web" ? "production build를 실행하고 그 출력" : "서명된 release APK"}을 결과물로 제공한다.` },
+    deliverable: { label: "검증 없이 결과물만", icon: "package_2", line: (pl) => `${pl === "web" ? "브라우저" : pl === "ios" ? "시뮬레이터나 실제 기기" : "에뮬레이터나 실제 기기"} 동작 검증은 필요 없다. 구현 후 ${pl === "web" ? "production build를 실행하고 그 출력" : pl === "ios" ? "iOS 시뮬레이터에서 빌드·실행되는 Xcode 프로젝트" : "서명된 release APK"}을 결과물로 제공한다.` },
     tests: { label: "테스트 작성", icon: "science", line: "주요 로직에 단위 테스트를 작성하고 모두 통과하는 상태로 제출한다." },
     darkMode: { label: "다크 모드 지원", icon: "dark_mode", line: "라이트와 다크 색상 스킴을 모두 지원하고 시스템 설정을 따른다." },
     languages: { label: "일본어와 영어", icon: "translate", line: "UI 문구를 일본어와 영어로 모두 준비하고 기기 언어 설정을 따른다." },

@@ -15,10 +15,10 @@ const SECTIONS: Record<Lang, string[]> = {
 };
 
 const PLATFORM_LINE: Record<Lang, Record<Platform, string>> = {
-  ja: { android: "実装先は Android（ネイティブアプリ）です。", web: "実装先は Web（ブラウザで動くアプリ）です。" },
-  en: { android: "Build it for Android, as a native app.", web: "Build it for the web, as an app that runs in the browser." },
-  zh: { android: "实现目标是 Android（原生应用）。", web: "实现目标是 Web（在浏览器中运行的应用）。" },
-  ko: { android: "Android 네이티브 앱으로 구현한다.", web: "브라우저에서 실행되는 웹 앱으로 구현한다." },
+  ja: { android: "実装先は Android（ネイティブアプリ）です。", web: "実装先は Web（ブラウザで動くアプリ）です。", ios: "実装先は iOS（iPhone のネイティブアプリ）です。Apple の Human Interface Guidelines に従ってください。" },
+  en: { android: "Build it for Android, as a native app.", web: "Build it for the web, as an app that runs in the browser.", ios: "Build it for iOS, as a native iPhone app that follows Apple's Human Interface Guidelines." },
+  zh: { android: "实现目标是 Android（原生应用）。", web: "实现目标是 Web（在浏览器中运行的应用）。", ios: "实现目标是 iOS（iPhone 原生应用），请遵循 Apple 的 Human Interface Guidelines。" },
+  ko: { android: "Android 네이티브 앱으로 구현한다.", web: "브라우저에서 실행되는 웹 앱으로 구현한다.", ios: "iOS(iPhone 네이티브 앱)로 구현하며, Apple의 Human Interface Guidelines를 따른다." },
 };
 
 /* One phone screen with a top app bar, a connected pair of buttons (one with a

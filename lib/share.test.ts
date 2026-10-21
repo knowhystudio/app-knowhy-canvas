@@ -149,7 +149,7 @@ describe("shareLink and readShareHash", () => {
     await expect(readShareHash(hash)).resolves.toBeNull();
   });
 
-  it.each([null, [], {}, { groups: [], frames: null }, { ...doc(), platform: "ios" },
+  it.each([null, [], {}, { groups: [], frames: null }, { ...doc(), platform: "windows" },
     { ...doc(), groups: [{ ...doc().groups[0], items: [] }] },
   ].map((value) => [value]))("rejects non-project JSON in either encoding: %# %o", async (value) => {
     await expect(readShareHash(plainHash(value))).resolves.toBeNull();

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { TEMPLATES, TEMPLATE_CATEGORIES, buildTemplate, templateFirstScreen } from "./templates";
 import { isProject } from "./project";
-import { frameOfGroup } from "./tokens";
+import { frameOfGroup, framePresetOf, Kind } from "./tokens";
 import { Lang } from "./i18n";
 
 /* Templates are documents in the native format, so the same rules a hand-made or
@@ -12,10 +12,45 @@ const WIDTHS = {};
 const LANGS_TRY: Lang[] = ["en", "zh", "ja", "ko"];
 
 describe("templates", () => {
-  it("ships twelve templates, three per category", () => {
-    expect(TEMPLATES).toHaveLength(12);
+  it("ships twelve phone flows plus the multi-device set", () => {
+    expect(TEMPLATES).toHaveLength(23);
     for (const cat of TEMPLATE_CATEGORIES) {
-      expect(TEMPLATES.filter((t) => t.category === cat.key)).toHaveLength(3);
+      expect(TEMPLATES.filter((t) => t.device === "phone" && t.category === cat.key)).toHaveLength(3);
+    }
+    expect(TEMPLATES.filter((t) => t.device === "iphone")).toHaveLength(6);
+    expect(TEMPLATES.filter((t) => t.device === "web")).toHaveLength(3);
+    expect(TEMPLATES.filter((t) => t.device === "desktop")).toHaveLength(2);
+    /* every device × category pair a template lands in shows at least one card */
+    const pairs = new Set(TEMPLATES.map((t) => `${t.device}:${t.category}`));
+    for (const pair of pairs) {
+      const [device, category] = pair.split(":");
+      expect(TEMPLATES.filter((t) => t.device === device && t.category === category).length, pair).toBeGreaterThan(0);
+    }
+  });
+
+  it("builds documents on the canvas the device asks for", () => {
+    for (const tpl of TEMPLATES) {
+      const doc = buildTemplate(tpl.key, "en", { paletteKey: "purple" });
+      for (const f of doc.frames) {
+        const preset = framePresetOf(f);
+        expect(preset, `${tpl.key}/${f.id}`).toBe(tpl.device === "phone" ? "phone" : tpl.device);
+      }
+      if (tpl.device === "iphone") {
+        const doc2 = buildTemplate(tpl.key, "en", { paletteKey: "purple" });
+        expect(doc2.platform).toBe("ios");
+      }
+      if (tpl.device === "web" || tpl.device === "desktop") {
+        expect(doc.platform).toBe("web");
+      }
+    }
+  });
+
+  it("draws iOS templates from the iOS parts", () => {
+    const iosKinds: Kind[] = ["iosSegment", "iosNavBar", "iosToolbar", "iosList", "iosTabBar", "iosSheet", "iosAlert", "iosSearch"];
+    for (const tpl of TEMPLATES.filter((t) => t.device === "iphone")) {
+      const doc = buildTemplate(tpl.key, "en", { paletteKey: "purple" });
+      const used = new Set(doc.groups.flatMap((g) => g.items.map((it) => it.kind)));
+      expect(iosKinds.filter((k) => used.has(k)).length, tpl.key).toBeGreaterThan(0);
     }
   });
 
@@ -28,10 +63,12 @@ describe("templates", () => {
     }
   });
 
-  it("keeps two to four screens with real copy on every screen", () => {
+  it("keeps one to four screens with real copy on every screen", () => {
     for (const tpl of TEMPLATES) {
       const doc = buildTemplate(tpl.key, "en", { paletteKey: "purple" });
-      expect(doc.frames.length, tpl.key).toBeGreaterThanOrEqual(2);
+      /* a phone flow walks two to four screens; a web or desktop window is one canvas */
+      const min = tpl.device === "phone" ? 2 : 1;
+      expect(doc.frames.length, tpl.key).toBeGreaterThanOrEqual(min);
       expect(doc.frames.length, tpl.key).toBeLessThanOrEqual(4);
       expect(doc.title.trim()).not.toBe("");
       for (const f of doc.frames) {

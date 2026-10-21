@@ -33,7 +33,7 @@ describe("isProject", () => {
     expect(isProject({ ...doc(), platform })).toBe(true);
   });
 
-  it.each([null, "ios", "", 0, {}, true])("rejects platform %j", (platform) => {
+  it.each([null, "windows", "", 0, {}, true])("rejects platform %j", (platform) => {
     expect(isProject({ ...doc(), platform })).toBe(false);
   });
 

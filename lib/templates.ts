@@ -1,4 +1,4 @@
-import { Doc, Frame, Group, Item, Kind, makeItem, PHONE_H, PHONE_W } from "./tokens";
+import { Doc, DESKTOP_H, DESKTOP_W, Frame, Group, IPHONE_H, IPHONE_W, Item, Kind, makeItem, PHONE_H, PHONE_W, WEB_H, WEB_W } from "./tokens";
 import { Lang } from "./i18n";
 
 /* Starter templates. Each one is a plain document in the native format — the same
@@ -126,16 +126,18 @@ function screen(id: string, name: Copy, note: Copy, lang: Lang, parts: PartSpec[
 
 const BODY_Y = BAR_H + 16;
 
-function assemble(specs: ScreenSpec[], title: string, brief: string, lang: Lang): Pick<Doc, "title" | "brief" | "frames" | "groups"> {
+function assemble(specs: ScreenSpec[], title: string, brief: string, lang: Lang, device: TemplateDevice = "phone"): Pick<Doc, "title" | "brief" | "frames" | "groups"> {
+  const { w, h } = device === "iphone" ? { w: IPHONE_W, h: IPHONE_H } : device === "web" ? { w: WEB_W, h: WEB_H } : device === "desktop" ? { w: DESKTOP_W, h: DESKTOP_H } : { w: PHONE_W, h: PHONE_H };
   const frames: Frame[] = [];
   const groups: Group[] = [];
   specs.forEach((spec, i) => {
-    const fx = i * (PHONE_W + SCREEN_GAP);
+    const fx = i * (w + SCREEN_GAP);
     frames.push({
       id: spec.id,
       name: c(spec.name, lang),
       x: fx,
       y: 0,
+      ...(device === "phone" ? {} : { kind: device, w, h }),
       note: spec.note ? c(spec.note, lang) : undefined,
     });
     for (const part of spec.parts) {
@@ -145,12 +147,19 @@ function assemble(specs: ScreenSpec[], title: string, brief: string, lang: Lang)
   return { title, brief, frames, groups };
 }
 
-/* ---------- the twelve templates ---------- */
+/* ---------- the templates: twelve phone flows, then the multi-device set ---------- */
+
+export type TemplateDevice = "phone" | "iphone" | "web" | "desktop";
 
 export type TemplateDef = {
   key: string;
   category: TemplateCategory;
-  nameKey: "tplSignin" | "tplOnboarding" | "tplProfile" | "tplFeed" | "tplChat" | "tplPost" | "tplShop" | "tplProduct" | "tplCart" | "tplMusic" | "tplWeather" | "tplFinance";
+  device: TemplateDevice;
+  nameKey:
+    | "tplSignin" | "tplOnboarding" | "tplProfile" | "tplFeed" | "tplChat" | "tplPost" | "tplShop" | "tplProduct" | "tplCart" | "tplMusic" | "tplWeather" | "tplFinance"
+    | "tplIosSignin" | "tplIosOnboarding" | "tplIosFeed" | "tplIosChat" | "tplIosMusic" | "tplIosWeather"
+    | "tplWebLanding" | "tplWebDashboard" | "tplWebBlog"
+    | "tplDeskMusic" | "tplDeskSettings";
   build: (lang: Lang) => Pick<Doc, "title" | "brief" | "frames" | "groups">;
 };
 
@@ -158,6 +167,7 @@ export const TEMPLATES: TemplateDef[] = [
   {
     key: "signin",
     category: "account",
+    device: "phone",
     nameKey: "tplSignin",
     build: (lang) => {
       const zh = lang === "zh";
@@ -179,6 +189,7 @@ export const TEMPLATES: TemplateDef[] = [
   {
     key: "onboarding",
     category: "account",
+    device: "phone",
     nameKey: "tplOnboarding",
     build: (lang) => {
       const zh = lang === "zh";
@@ -199,6 +210,7 @@ export const TEMPLATES: TemplateDef[] = [
   {
     key: "profile",
     category: "account",
+    device: "phone",
     nameKey: "tplProfile",
     build: (lang) => {
       const zh = lang === "zh";
@@ -228,6 +240,7 @@ export const TEMPLATES: TemplateDef[] = [
   {
     key: "feed",
     category: "social",
+    device: "phone",
     nameKey: "tplFeed",
     build: (lang) => {
       const zh = lang === "zh";
@@ -265,6 +278,7 @@ export const TEMPLATES: TemplateDef[] = [
   {
     key: "chat",
     category: "social",
+    device: "phone",
     nameKey: "tplChat",
     build: (lang) => {
       const zh = lang === "zh";
@@ -294,6 +308,7 @@ export const TEMPLATES: TemplateDef[] = [
   {
     key: "post",
     category: "social",
+    device: "phone",
     nameKey: "tplPost",
     build: (lang) => {
       const zh = lang === "zh";
@@ -329,6 +344,7 @@ export const TEMPLATES: TemplateDef[] = [
   {
     key: "shop",
     category: "commerce",
+    device: "phone",
     nameKey: "tplShop",
     build: (lang) => {
       const zh = lang === "zh";
@@ -368,6 +384,7 @@ export const TEMPLATES: TemplateDef[] = [
   {
     key: "product",
     category: "commerce",
+    device: "phone",
     nameKey: "tplProduct",
     build: (lang) => {
       const zh = lang === "zh";
@@ -394,6 +411,7 @@ export const TEMPLATES: TemplateDef[] = [
   {
     key: "cart",
     category: "commerce",
+    device: "phone",
     nameKey: "tplCart",
     build: (lang) => {
       const zh = lang === "zh";
@@ -422,6 +440,7 @@ export const TEMPLATES: TemplateDef[] = [
   {
     key: "music",
     category: "media",
+    device: "phone",
     nameKey: "tplMusic",
     build: (lang) => {
       const zh = lang === "zh";
@@ -459,6 +478,7 @@ export const TEMPLATES: TemplateDef[] = [
   {
     key: "weather",
     category: "media",
+    device: "phone",
     nameKey: "tplWeather",
     build: (lang) => {
       const zh = lang === "zh";
@@ -490,6 +510,7 @@ export const TEMPLATES: TemplateDef[] = [
   {
     key: "finance",
     category: "media",
+    device: "phone",
     nameKey: "tplFinance",
     build: (lang) => {
       const zh = lang === "zh";
@@ -524,6 +545,319 @@ export const TEMPLATES: TemplateDef[] = [
       return assemble([s1, s2, s3], zh ? "简账" : "Ledgerly", zh ? "个人记账与支出统计。" : "Personal expense tracking and stats.", lang);
     },
   },
+  /* ---------- iOS set: the same flows rebuilt on the iPhone canvas with iOS parts ---------- */
+  {
+    key: "ios-signin",
+    category: "account",
+    device: "iphone",
+    nameKey: "tplIosSignin",
+    build: (lang) => {
+      const zh = lang === "zh";
+      const iosBar = (title: Copy, back = false): Item =>
+        it("iosNavBar", {
+          id: nid("nb"),
+          label: c(title, lang),
+          icon: back ? "chevron_left" : null,
+          icon2: back ? null : "person_circle",
+          ...(back ? { action: { to: "back" as const, transition: "slide" as const } } : {}),
+        });
+      const s1 = screen("ios-signin", { en: "Sign in", zh: "登录" }, { en: "iOS sign-in with grouped fields.", zh: "iOS 风格登录，分组输入。" }, lang, [
+        { id: nid("g"), x: 16, y: 100, axis: "y", items: [iosBar({ en: "Sign in", zh: "登录" })] },
+        { id: nid("g"), x: 16, y: 216, axis: "y", items: [field({ en: "Email", zh: "邮箱" }, lang, "textField", "mail"), field({ en: "Password", zh: "密码" }, lang, "textField", "lock")] },
+        { id: nid("g"), x: 16, y: 372, axis: "y", items: [button({ en: "Sign in", zh: "登录" }, lang, "ios-signup", 361), it("text", { id: nid("t"), label: c({ en: "Forgot password?", zh: "忘记密码？" }, lang), icon: null, variant: "filled", size: 15, action: { to: "ios-signup", transition: "slide" } })] },
+      ], { nav: it("iosTabBar", { id: nid("tb"), label: "", icon: null, variant: "filled", tabs: [{ icon: "login", label: c({ en: "Sign in", zh: "登录" }, lang) }, { icon: "person_add", label: c({ en: "Sign up", zh: "注册" }, lang) }], selected: 0, actions: { "tab:1": { to: "ios-signup", transition: "fade" } } }) });
+      const s2 = screen("ios-signup", { en: "Sign up", zh: "注册" }, { en: "Create an account.", zh: "创建新账号。" }, lang, [
+        { id: nid("g"), x: 16, y: 100, axis: "y", items: [iosBar({ en: "Sign up", zh: "注册" }, true)] },
+        { id: nid("g"), x: 16, y: 216, axis: "y", items: [field({ en: "Nickname", zh: "昵称" }, lang, "textField", "person"), field({ en: "Email", zh: "邮箱" }, lang, "textField", "mail"), field({ en: "Password", zh: "密码" }, lang, "textField", "lock"), button({ en: "Create account", zh: "创建账号" }, lang, "back", 361)] },
+      ]);
+      return assemble([s1, s2], zh ? "花园记" : "Bloom", zh ? "照顾家中植物的提醒与日志应用（iOS 版）。" : "Care reminders and a journal for house plants, iOS edition.", lang, "iphone");
+    },
+  },
+  {
+    key: "ios-onboarding",
+    category: "account",
+    device: "iphone",
+    nameKey: "tplIosOnboarding",
+    build: (lang) => {
+      const zh = lang === "zh";
+      const seg = (i: number): Item =>
+        it("iosSegment", { id: nid("sg"), label: "", icon: null, variant: "filled", tabs: [{ icon: "", label: c({ en: "Learn", zh: "学习" }, lang) }, { icon: "", label: c({ en: "Practice", zh: "练习" }, lang) }, { icon: "", label: c({ en: "Review", zh: "复习" }, lang) }], selected: i });
+      const s1 = screen("o1", { en: "Welcome", zh: "欢迎" }, { en: "First launch.", zh: "首次启动。" }, lang, [
+        { id: nid("g"), x: 16, y: 96, axis: "x", items: [seg(0)] },
+        { id: nid("g"), x: 120, y: 240, axis: "x", items: [it("box", { id: nid("bx"), label: "", icon: null, variant: "filled", size: 150, size2: 150, radiusTop: 40, radiusBottom: 40, fill: "primaryContainer" })] },
+        { id: nid("g"), x: 16, y: 430, axis: "y", items: [text({ en: "Learn a little, every day", zh: "每天进步一点点" }, lang, 30, true), text({ en: "Five-minute lessons that fit your morning.", zh: "五分钟一课，装进你的清晨。" }, lang, 15)] },
+        { id: nid("g"), x: 16, y: 600, axis: "y", items: [button({ en: "Next", zh: "下一步" }, lang, "o2", 361)] },
+      ], { nav: it("iosTabBar", { id: nid("tb"), label: "", icon: null, variant: "filled", tabs: [{ icon: "house", label: c({ en: "Home", zh: "首页" }, lang) }, { icon: "chart_bar", label: c({ en: "Stats", zh: "统计" }, lang) }] }) });
+      const s2 = screen("o2", { en: "Practice", zh: "练习" }, { en: "Turn on reminders and go.", zh: "打开提醒，开始吧。" }, lang, [
+        { id: nid("g"), x: 16, y: 96, axis: "x", items: [seg(1)] },
+        { id: nid("g"), x: 16, y: 220, axis: "y", items: [
+          it("iosList", { id: nid("ls"), label: "", icon: null, variant: "filled", tabs: [{ icon: "notifications", label: c({ en: "Daily reminder", zh: "每日提醒" }, lang), on: true }, { icon: "dark_mode", label: c({ en: "Dark mode", zh: "深色模式" }, lang), on: false }], size2: 132 }),
+        ] },
+        { id: nid("g"), x: 16, y: 600, axis: "y", items: [button({ en: "Get started", zh: "开始使用" }, lang, "back", 361)] },
+      ], { back: true, nav: it("iosTabBar", { id: nid("tb"), label: "", icon: null, variant: "filled", tabs: [{ icon: "house", label: c({ en: "Home", zh: "首页" }, lang) }, { icon: "chart_bar", label: c({ en: "Stats", zh: "统计" }, lang) }] }) });
+      return assemble([s1, s2], zh ? "句句学" : "Lingo", zh ? "碎片时间的语言学习应用（iOS 版）。" : "Bite-size language learning, iOS edition.", lang, "iphone");
+    },
+  },
+  {
+    key: "ios-feed",
+    category: "social",
+    device: "iphone",
+    nameKey: "tplIosFeed",
+    build: (lang) => {
+      const zh = lang === "zh";
+      const tb = (sel: 0 | 1, otherId: string): Item =>
+        it("iosTabBar", {
+          id: nid("tb"),
+          label: "",
+          icon: null,
+          variant: "filled",
+          tabs: [{ icon: "house", label: c({ en: "Home", zh: "首页" }, lang) }, { icon: "search", label: c({ en: "Search", zh: "搜索" }, lang) }, { icon: "person", label: c({ en: "Me", zh: "我的" }, lang) }],
+          selected: sel,
+          actions: { [`tab:${sel === 0 ? 1 : 0}`]: { to: otherId, transition: "fade" } },
+        });
+      const s1 = screen("if", { en: "Home", zh: "首页" }, { en: "iOS feed with a large-title bar.", zh: "iOS 大标题信息流。" }, lang, [
+        { id: nid("g"), x: 16, y: 96, axis: "x", items: [it("iosNavBar", { id: nid("nb"), label: c({ en: "Home", zh: "首页" }, lang), icon: null, icon2: null })] },
+        { id: nid("g"), x: 16, y: 200, axis: "y", items: [
+          card({ en: "Morning run along the river", zh: "清晨沿江跑步打卡" }, { en: "Mei · 12 min ago", zh: "阿梅 · 12 分钟前" }, lang, { size2: 200, to: "id" }),
+          card({ en: "New espresso setup finally dialed in", zh: "新的意式咖啡机终于调好了" }, { en: "Kepler · 1 h ago", zh: "开普勒 · 1 小时前" }, lang, { size2: 200, to: "id" }),
+        ] },
+      ], { nav: tb(0, "is") });
+      const s2 = screen("is", { en: "Search", zh: "搜索" }, { en: "iOS search over the feed.", zh: "iOS 风格搜索。" }, lang, [
+        { id: nid("g"), x: 16, y: 96, axis: "x", items: [it("iosNavBar", { id: nid("nb"), label: c({ en: "Search", zh: "搜索" }, lang), icon: null, icon2: null })] },
+        { id: nid("g"), x: 16, y: 200, axis: "y", items: [
+          it("iosSearch", { id: nid("se"), label: c({ en: "Search", zh: "搜索" }, lang), icon: null, variant: "filled" }),
+          it("iosList", { id: nid("ls"), label: "", icon: null, variant: "filled", tabs: [{ icon: "tag", label: c({ en: "#film photography", zh: "#胶片摄影" }, lang) }, { icon: "tag", label: c({ en: "#city walks", zh: "#城市漫步" }, lang) }, { icon: "person", label: c({ en: "@kepler.cooks", zh: "@开普勒下厨" }, lang) }], size2: 176 }),
+        ] },
+      ], { nav: tb(1, "if") });
+      const s3 = screen("id", { en: "Post", zh: "详情" }, { en: "A post with its comments.", zh: "动态与评论。" }, lang, [
+        { id: nid("g"), x: 16, y: 96, axis: "x", items: [it("iosNavBar", { id: nid("nb"), label: c({ en: "Post", zh: "详情" }, lang), icon: "chevron_left", icon2: null, action: { to: "back", transition: "slide" } })] },
+        { id: nid("g"), x: 16, y: 200, axis: "y", items: [
+          card({ en: "Morning run along the river", zh: "清晨沿江跑步打卡" }, { en: "6.2 km · 34 min", zh: "6.2 公里 · 34 分钟" }, lang, { size2: 180 }),
+          it("iosList", { id: nid("ls"), label: "", icon: null, variant: "filled", tabs: [{ icon: "person", label: c({ en: "Jun: love this route!", zh: "阿军：这条路线太爱了！" }, lang) }, { icon: "person", label: c({ en: "Ran: see you next run", zh: "阿然：下次带上我" }, lang) }], size2: 132 }),
+        ] },
+      ], { back: true });
+      return assemble([s1, s2, s3], zh ? "脉动" : "Pulse", zh ? "轻量图文社交应用（iOS 版）。" : "A lightweight social app, iOS edition.", lang, "iphone");
+    },
+  },
+  {
+    key: "ios-chat",
+    category: "social",
+    device: "iphone",
+    nameKey: "tplIosChat",
+    build: (lang) => {
+      const zh = lang === "zh";
+      const s1 = screen("ic", { en: "Chats", zh: "会话" }, { en: "Conversations with an iOS search.", zh: "会话列表与 iOS 搜索。" }, lang, [
+        { id: nid("g"), x: 16, y: 96, axis: "x", items: [it("iosNavBar", { id: nid("nb"), label: c({ en: "Chats", zh: "会话" }, lang), icon: null, icon2: "square_and_pencil" })] },
+        { id: nid("g"), x: 16, y: 208, axis: "y", items: [
+          it("iosSearch", { id: nid("se"), label: c({ en: "Search", zh: "搜索" }, lang), icon: null, variant: "filled" }),
+          it("iosList", { id: nid("ls"), label: "", icon: null, variant: "filled", tabs: [{ icon: "groups", label: c({ en: "Design review", zh: "设计评审群" }, lang) }, { icon: "person", label: c({ en: "Mom", zh: "妈妈" }, lang) }, { icon: "directions_run", label: c({ en: "Running club", zh: "跑团" }, lang) }], size2: 176 }),
+        ] },
+      ], { nav: it("iosTabBar", { id: nid("tb"), label: "", icon: null, variant: "filled", tabs: [{ icon: "chat_bubble", label: c({ en: "Chats", zh: "会话" }, lang) }, { icon: "archive", label: c({ en: "Archive", zh: "归档" }, lang) }] }) });
+      const s2 = screen("room", { en: "Chat", zh: "聊天" }, { en: "Bubbles with a frosted toolbar.", zh: "消息气泡与毛玻璃工具栏。" }, lang, [
+        { id: nid("g"), x: 16, y: 96, axis: "x", items: [it("iosNavBar", { id: nid("nb"), label: c({ en: "Design review", zh: "设计评审群" }, lang), icon: "chevron_left", icon2: "video_call", action: { to: "back", transition: "slide" } })] },
+        { id: nid("g"), x: 16, y: 220, axis: "y", items: [
+          it("box", { id: nid("m1"), label: "", icon: null, variant: "filled", size: 220, size2: 44, radiusTop: 18, radiusBottom: 18, fill: "surfaceContainerHigh" }),
+          it("box", { id: nid("m2"), label: "", icon: null, variant: "filled", size: 170, size2: 44, radiusTop: 18, radiusBottom: 18, fill: "primaryContainer" }),
+        ] },
+        { id: nid("g"), x: 26, y: 232, axis: "x", items: [it("text", { id: nid("t1"), label: c({ en: "See you at 6!", zh: "6 点见！" }, lang), icon: null, variant: "filled", size: 14 })] },
+        { id: nid("g"), x: 200, y: 280, axis: "x", items: [it("text", { id: nid("t2"), label: c({ en: "Bringing mockups ☕", zh: "带原型图过去 ☕" }, lang), icon: null, variant: "filled", size: 14 })] },
+        { id: nid("g"), x: 16, y: 700, axis: "x", items: [it("iosToolbar", { id: nid("tl"), label: "", icon: null, variant: "filled", tabs: [{ icon: "camera", label: "" }, { icon: "photo_library", label: "" }, { icon: "mic", label: "" }] })] },
+      ], { back: true });
+      return assemble([s1, s2], zh ? "回声" : "Echo", zh ? "熟人即时通讯（iOS 版）。" : "Instant messaging for close circles, iOS edition.", lang, "iphone");
+    },
+  },
+  {
+    key: "ios-music",
+    category: "media",
+    device: "iphone",
+    nameKey: "tplIosMusic",
+    build: (lang) => {
+      const zh = lang === "zh";
+      const s1 = screen("im", { en: "Library", zh: "音乐库" }, { en: "Playlists with a segmented scope.", zh: "分段切换的歌单库。" }, lang, [
+        { id: nid("g"), x: 16, y: 96, axis: "x", items: [it("iosNavBar", { id: nid("nb"), label: c({ en: "Library", zh: "音乐库" }, lang), icon: null, icon2: null })] },
+        { id: nid("g"), x: 16, y: 200, axis: "x", items: [it("iosSegment", { id: nid("sg"), label: "", icon: null, variant: "filled", tabs: [{ icon: "", label: c({ en: "Playlists", zh: "歌单" }, lang) }, { icon: "", label: c({ en: "Artists", zh: "歌手" }, lang) }, { icon: "", label: c({ en: "Albums", zh: "专辑" }, lang) }], selected: 0 })] },
+        { id: nid("g"), x: 16, y: 260, axis: "y", items: [
+          it("iosList", { id: nid("ls"), label: "", icon: null, variant: "filled", tabs: [{ icon: "headphones", label: c({ en: "Deep Focus", zh: "深度专注" }, lang) }, { icon: "directions_car", label: c({ en: "Night Drive", zh: "夜间驾驶" }, lang) }, { icon: "restaurant", label: c({ en: "Kitchen Jazz", zh: "厨房爵士" }, lang) }], size2: 176 }),
+        ] },
+      ], { nav: it("iosTabBar", { id: nid("tb"), label: "", icon: null, variant: "filled", tabs: [{ icon: "library_music", label: c({ en: "Library", zh: "音乐库" }, lang) }, { icon: "play_circle", label: c({ en: "Playing", zh: "播放" }, lang) }], selected: 0, actions: { "tab:1": { to: "now", transition: "slide" } } }) });
+      const s2 = screen("now", { en: "Now playing", zh: "正在播放" }, { en: "Artwork and transport controls.", zh: "封面与播放控制。" }, lang, [
+        { id: nid("g"), x: 36, y: 100, axis: "x", items: [it("iosNavBar", { id: nid("nb"), label: c({ en: "Now playing", zh: "正在播放" }, lang), icon: "chevron_left", icon2: null, action: { to: "back", transition: "slide" } })] },
+        { id: nid("g"), x: 46, y: 190, axis: "x", items: [it("image", { id: nid("art"), label: "", icon: null, variant: "filled", size: 300, size2: 300 })] },
+        { id: nid("g"), x: 16, y: 516, axis: "y", items: [
+          it("text", { id: nid("tt"), label: c({ en: "Slow Tide — Cassia", zh: "慢潮 — 卡西娅" }, lang), icon: null, variant: "filled", size: 20, bold: true }),
+          it("slider", { id: nid("seek"), label: "", icon: null, variant: "filled", value: 40 }),
+        ] },
+        { id: nid("g"), x: 46, y: 640, axis: "x", items: [it("iosToolbar", { id: nid("tl"), label: "", icon: null, variant: "filled", tabs: [{ icon: "skip_previous", label: "" }, { icon: "pause_circle", label: "" }, { icon: "skip_next", label: "" }] })] },
+      ], { back: true });
+      return assemble([s1, s2], zh ? "浪声" : "Waves", zh ? "本地音乐播放器（iOS 版）。" : "A local music player, iOS edition.", lang, "iphone");
+    },
+  },
+  {
+    key: "ios-weather",
+    category: "media",
+    device: "iphone",
+    nameKey: "tplIosWeather",
+    build: (lang) => {
+      const zh = lang === "zh";
+      const s1 = screen("iw", { en: "Today", zh: "今天" }, { en: "Current conditions and the week.", zh: "当前天气与一周趋势。" }, lang, [
+        { id: nid("g"), x: 16, y: 96, axis: "x", items: [it("iosNavBar", { id: nid("nb"), label: c({ en: "My location", zh: "所在城市" }, lang), icon: null, icon2: null })] },
+        { id: nid("g"), x: 130, y: 180, axis: "y", items: [
+          it("text", { id: nid("tmp"), label: c({ en: "23°", zh: "23°" }, lang), icon: null, variant: "filled", size: 68, bold: true }),
+          it("text", { id: nid("cond"), label: c({ en: "Partly cloudy", zh: "多云转晴" }, lang), icon: null, variant: "filled", size: 15 }),
+        ] },
+        { id: nid("g"), x: 16, y: 400, axis: "y", items: [
+          it("iosList", { id: nid("ls"), label: "", icon: null, variant: "filled", tabs: [{ icon: "partly_cloudy_day", label: c({ en: "Tomorrow · 18–26°", zh: "明天 · 18–26°" }, lang) }, { icon: "rainy", label: c({ en: "Wednesday · 17–24°", zh: "周三 · 17–24°" }, lang) }, { icon: "sunny", label: c({ en: "Thursday · 19–27°", zh: "周四 · 19–27°" }, lang) }], size2: 176 }),
+        ] },
+      ], { nav: it("iosTabBar", { id: nid("tb"), label: "", icon: null, variant: "filled", tabs: [{ icon: "partly_cloudy_day", label: c({ en: "Today", zh: "今天" }, lang) }, { icon: "map", label: c({ en: "Cities", zh: "城市" }, lang) }] }) });
+      const s2 = screen("cities", { en: "Cities", zh: "城市" }, { en: "Saved cities.", zh: "已保存的城市。" }, lang, [
+        { id: nid("g"), x: 16, y: 96, axis: "x", items: [it("iosNavBar", { id: nid("nb"), label: c({ en: "Cities", zh: "城市" }, lang), icon: "chevron_left", icon2: null, action: { to: "back", transition: "slide" } })] },
+        { id: nid("g"), x: 16, y: 200, axis: "y", items: [
+          it("iosSearch", { id: nid("se"), label: c({ en: "Search a city", zh: "搜索城市" }, lang), icon: null, variant: "filled" }),
+          it("iosList", { id: nid("ls"), label: "", icon: null, variant: "filled", tabs: [{ icon: "location_on", label: c({ en: "Shanghai · 23°", zh: "上海 · 23°" }, lang) }, { icon: "location_on", label: c({ en: "Tokyo · 19°", zh: "东京 · 19°" }, lang) }, { icon: "location_on", label: c({ en: "Singapore · 31°", zh: "新加坡 · 31°" }, lang) }], size2: 176 }),
+        ] },
+      ], { back: true, nav: it("iosTabBar", { id: nid("tb"), label: "", icon: null, variant: "filled", tabs: [{ icon: "partly_cloudy_day", label: c({ en: "Today", zh: "今天" }, lang) }, { icon: "map", label: c({ en: "Cities", zh: "城市" }, lang) }], selected: 1, actions: { "tab:0": { to: "iw", transition: "fade" } } }) });
+      return assemble([s1, s2], zh ? "观天" : "Skycast", zh ? "简洁的天气预报应用（iOS 版）。" : "A calm weather forecast app, iOS edition.", lang, "iphone");
+    },
+  },
+  /* ---------- web set: 1440-wide pages from the existing parts ---------- */
+  {
+    key: "web-landing",
+    category: "commerce",
+    device: "web",
+    nameKey: "tplWebLanding",
+    build: (lang) => {
+      const zh = lang === "zh";
+      const M = 80;
+      const s1: ScreenSpec = {
+        id: "landing",
+        name: { en: "Landing", zh: "落地页" },
+        note: { en: "A product landing page: hero, features, call to action.", zh: "产品落地页：主视觉、特性与行动号召。" },
+        parts: [
+          { id: nid("g"), x: 0, y: 0, axis: "x", items: [it("topAppBar", { id: nid("bar"), label: c({ en: "Northbeam", zh: "北辰" }, lang), icon: null, icon2: null, variant: "filled", size: WEB_W })] },
+          { id: nid("g"), x: M, y: 140, axis: "y", items: [
+            text({ en: "Ship your docs as fast as you ship code", zh: "文档跟着代码一起发布" }, lang, 52, true),
+            text({ en: "Northbeam turns your repository into a living knowledge base for the whole team.", zh: "北辰把代码仓库变成团队的知识库。" }, lang, 20),
+          ] },
+          { id: nid("g"), x: M, y: 380, axis: "x", items: [button({ en: "Start free", zh: "免费开始" }, lang, undefined, 220), button({ en: "Book a demo", zh: "预约演示" }, lang, undefined, 200)] },
+          { id: nid("g"), x: M, y: 520, axis: "x", items: [0, 1, 2].map((i) => card([{ en: "Instant search", zh: "即刻搜索" }, { en: "Review flows", zh: "评审流" }, { en: "Access control", zh: "权限管理" }][i] as Copy, [{ en: "Answers in one keystroke.", zh: "一键即达的答案。" }, { en: "Docs review right in the PR.", zh: "在 PR 里完成文档评审。" }, { en: "SSO and fine-grained roles.", zh: "SSO 与细粒度角色。" }][i] as Copy, lang, { size2: 200 })) },
+          { id: nid("g"), x: M, y: 780, axis: "x", items: [text({ en: "© 2026 Northbeam · Built with Knowhy Canvas", zh: "© 2026 北辰 · 用 Knowhy Canvas 制作" }, lang, 13)] },
+        ],
+      };
+      return assemble([s1], zh ? "北辰" : "Northbeam", zh ? "开发者文档平台的官网落地页。" : "A landing page for a developer docs platform.", lang, "web");
+    },
+  },
+  {
+    key: "web-dashboard",
+    category: "media",
+    device: "web",
+    nameKey: "tplWebDashboard",
+    build: (lang) => {
+      const zh = lang === "zh";
+      const M = 64;
+      const s1: ScreenSpec = {
+        id: "dash",
+        name: { en: "Dashboard", zh: "仪表盘" },
+        note: { en: "An ops dashboard: KPIs, a trend area and recent activity.", zh: "运营仪表盘：指标、趋势与最近动态。" },
+        parts: [
+          { id: nid("g"), x: 0, y: 0, axis: "x", items: [it("topAppBar", { id: nid("bar"), label: c({ en: "Ops dashboard", zh: "运营仪表盘" }, lang), icon: "menu", icon2: "notifications", variant: "filled", size: WEB_W })] },
+          { id: nid("g"), x: M, y: 128, axis: "x", items: [["Orders", "订单", "1,284"], ["Revenue", "收入", "¥86k"], ["Refunds", "退款", "32"], ["Latency", "延迟", "212ms"]].map(([en, zhL, v]) => it("card", { id: nid("kpi"), label: c({ en, zh: zhL }, lang), supporting: v, icon: "trending_up", variant: "filled", size: 300, size2: 140, noImage: true })) },
+          { id: nid("g"), x: M, y: 320, axis: "x", items: [
+            it("box", { id: nid("chart"), label: "", icon: null, variant: "filled", size: 880, size2: 380, radiusTop: 16, radiusBottom: 16, fill: "surfaceContainerLow" }),
+            it("box", { id: nid("side"), label: "", icon: null, variant: "filled", size: 392, size2: 380, radiusTop: 16, radiusBottom: 16, fill: "surfaceContainerLow" }),
+          ] },
+          { id: nid("g"), x: 96, y: 350, axis: "x", items: [it("linearProgress", { id: nid("pg"), label: "", icon: null, variant: "filled", value: 64 })] },
+          { id: nid("g"), x: M, y: 740, axis: "y", items: [
+            it("listItem", { id: nid("r1"), label: c({ en: "Order #1042 shipped", zh: "订单 #1042 已发货" }, lang), supporting: c({ en: "2 min ago", zh: "2 分钟前" }, lang), icon: "local_shipping", icon2: null, variant: "filled" }),
+            it("listItem", { id: nid("r2"), label: c({ en: "New team member joined", zh: "新成员加入团队" }, lang), supporting: c({ en: "1 h ago", zh: "1 小时前" }, lang), icon: "person_add", icon2: null, variant: "filled" }),
+          ] },
+        ],
+      };
+      return assemble([s1], zh ? "运营台" : "Console", zh ? "团队运营数据仪表盘（网页）。" : "A team operations dashboard for the web.", lang, "web");
+    },
+  },
+  {
+    key: "web-blog",
+    category: "media",
+    device: "web",
+    nameKey: "tplWebBlog",
+    build: (lang) => {
+      const zh = lang === "zh";
+      const M = 80;
+      const s1: ScreenSpec = {
+        id: "blog",
+        name: { en: "Blog", zh: "博客" },
+        note: { en: "A content site: featured story, article list and about column.", zh: "内容站：头条、文章列表与关于栏。" },
+        parts: [
+          { id: nid("g"), x: 0, y: 0, axis: "x", items: [it("topAppBar", { id: nid("bar"), label: c({ en: "Fieldnotes", zh: "田野笔记" }, lang), icon: null, icon2: "search", variant: "filled", size: WEB_W })] },
+          { id: nid("g"), x: M, y: 120, axis: "x", items: [card({ en: "Designing for the edges of the network", zh: "为网络的边缘做设计" }, { en: "Featured · 12 min read", zh: "头条 · 12 分钟读完" }, lang, { size2: 300 })] },
+          { id: nid("g"), x: M, y: 470, axis: "x", items: [
+            it("card", { id: nid("a1"), label: c({ en: "What we learned rewriting the editor", zh: "重写编辑器的收获" }, lang), supporting: c({ en: "Engineering · 8 min", zh: "工程 · 8 分钟" }, lang), icon: "article", variant: "outlined", size: 620, size2: 170 }),
+            it("card", { id: nid("a2"), label: c({ en: "A field guide to canvas performance", zh: "画布性能实地指南" }, lang), supporting: c({ en: "Engineering · 6 min", zh: "工程 · 6 分钟" }, lang), icon: "article", variant: "outlined", size: 620, size2: 170 }),
+          ] },
+          { id: nid("g"), x: 880, y: 470, axis: "y", items: [
+            it("box", { id: nid("about"), label: "", icon: null, variant: "filled", size: 400, size2: 352, radiusTop: 16, radiusBottom: 16, fill: "surfaceContainerLow" }),
+            it("text", { id: nid("ab"), label: c({ en: "About the team →", zh: "关于团队 →" }, lang), icon: null, variant: "filled", size: 15 }),
+          ] },
+        ],
+      };
+      return assemble([s1], zh ? "田野笔记" : "Fieldnotes", zh ? "工程团队的博客/内容站。" : "A blog and content site for an engineering team.", lang, "web");
+    },
+  },
+  /* ---------- desktop set: macOS-style windows from the existing parts ---------- */
+  {
+    key: "desk-music",
+    category: "media",
+    device: "desktop",
+    nameKey: "tplDeskMusic",
+    build: (lang) => {
+      const zh = lang === "zh";
+      const s1: ScreenSpec = {
+        id: "player",
+        name: { en: "Player", zh: "播放器" },
+        note: { en: "A desktop music player: rail navigation, album grid, player bar.", zh: "桌面音乐播放器：侧边导航、专辑网格与播放条。" },
+        parts: [
+          { id: nid("g"), x: 0, y: 0, axis: "y", items: [it("navRail", { id: nid("rail"), label: "", icon: null, variant: "filled", size2: 800, railExpanded: true, tabs: [{ icon: "library_music", label: c({ en: "Library", zh: "音乐库" }, lang) }, { icon: "album", label: c({ en: "Albums", zh: "专辑" }, lang) }, { icon: "favorite", label: c({ en: "Favorites", zh: "收藏" }, lang) }], selected: 0 })] },
+          { id: nid("g"), x: 260, y: 56, axis: "y", items: [
+            text({ en: "Good evening", zh: "晚上好" }, lang, 34, true),
+            it("searchBar", { id: nid("sb"), label: c({ en: "Search your library", zh: "搜索音乐库" }, lang), icon: null, variant: "filled", size: 420 }),
+          ] },
+          { id: nid("g"), x: 260, y: 230, axis: "x", items: [0, 1, 2, 3].map((i) => it("card", { id: nid(`al${i}`), label: [["Deep Focus", "深度专注"], ["Night Drive", "夜间驾驶"], ["Kitchen Jazz", "厨房爵士"], ["Rainy Window", "雨窗"]][i][lang === "zh" ? 1 : 0], supporting: c({ en: `${16 + i * 6} songs`, zh: `${16 + i * 6} 首` }, lang), icon: "album", variant: "filled", size: 220, size2: 220 })) },
+          { id: nid("g"), x: 260, y: 700, axis: "x", items: [
+            it("box", { id: nid("pbar"), label: "", icon: null, variant: "filled", size: 960, size2: 72, radiusTop: 16, radiusBottom: 16, fill: "surfaceContainerHigh" }),
+            it("text", { id: nid("now"), label: c({ en: "Slow Tide — Cassia", zh: "慢潮 — 卡西娅" }, lang), icon: null, variant: "filled", size: 14 }),
+          ] },
+          { id: nid("g"), x: 300, y: 722, axis: "x", items: [it("slider", { id: nid("seek"), label: "", icon: null, variant: "filled", value: 40, size: 400 })] },
+        ],
+      };
+      return assemble([s1], zh ? "浪声桌面版" : "Waves Desktop", zh ? "桌面端音乐播放器（macOS 窗口）。" : "A desktop music player in a macOS window.", lang, "desktop");
+    },
+  },
+  {
+    key: "desk-settings",
+    category: "account",
+    device: "desktop",
+    nameKey: "tplDeskSettings",
+    build: (lang) => {
+      const zh = lang === "zh";
+      const s1: ScreenSpec = {
+        id: "settings",
+        name: { en: "Settings", zh: "设置中心" },
+        note: { en: "A desktop settings center: sections on the rail, controls on the right.", zh: "桌面设置中心：侧栏分区，右侧控件。" },
+        parts: [
+          { id: nid("g"), x: 0, y: 0, axis: "y", items: [it("navRail", { id: nid("rail"), label: "", icon: null, variant: "filled", size2: 800, railExpanded: true, tabs: [{ icon: "person", label: c({ en: "Account", zh: "账号" }, lang) }, { icon: "palette", label: c({ en: "Appearance", zh: "外观" }, lang) }, { icon: "lock", label: c({ en: "Privacy", zh: "隐私" } , lang) }, { icon: "info", label: c({ en: "About", zh: "关于" }, lang) }], selected: 0 })] },
+          { id: nid("g"), x: 280, y: 72, axis: "y", items: [
+            text({ en: "Account settings", zh: "账号设置" }, lang, 30, true),
+            it("switch", { id: nid("sw1"), label: c({ en: "Sync across devices", zh: "跨设备同步" }, lang), icon: null, variant: "filled", checked: true, size: 800 }),
+            it("switch", { id: nid("sw2"), label: c({ en: "Show desktop notifications", zh: "显示桌面通知" }, lang), icon: null, variant: "filled", checked: false, size: 800 }),
+            it("listItem", { id: nid("r1"), label: c({ en: "Language", zh: "语言" }, lang), supporting: c({ en: "Follow the system", zh: "跟随系统" }, lang), icon: "translate", icon2: "chevron_right", variant: "filled" }),
+            it("listItem", { id: nid("r2"), label: c({ en: "Storage location", zh: "存储位置" }, lang), supporting: c({ en: "~/Library/Knowhy", zh: "~/Library/Knowhy" }, lang), icon: "folder", icon2: "folder_open", variant: "filled" }),
+            it("listItem", { id: nid("r3"), label: c({ en: "Delete all local data", zh: "删除全部本地数据" }, lang), icon: "delete_forever", icon2: null, variant: "filled" }),
+          ] },
+        ],
+      };
+      return assemble([s1], zh ? "工作台" : "Workbench", zh ? "桌面端设置中心（macOS 窗口）。" : "A desktop settings center in a macOS window.", lang, "desktop");
+    },
+  },
 ];
 
 /** the full document a template stands for: structure from the template, the author's palette and theme kept as they are */
@@ -532,10 +866,11 @@ export function buildTemplate(key: string, lang: Lang, keep: { paletteKey: strin
   const def = TEMPLATES.find((t) => t.key === key);
   if (!def) throw new Error(`unknown template: ${key}`);
   const base = def.build(lang);
+  const platform = def.device === "iphone" ? ("ios" as const) : def.device === "phone" ? ("android" as const) : ("web" as const);
   return {
     ...base,
     frame: "phone",
-    platform: "android",
+    platform,
     paletteKey: keep.paletteKey,
     ...(keep.customPalette ? { customPalette: keep.customPalette } : {}),
     ...(keep.dynamicColor ? { dynamicColor: keep.dynamicColor } : {}),
